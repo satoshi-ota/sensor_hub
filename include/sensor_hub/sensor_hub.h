@@ -50,7 +50,7 @@ public:
 
     int kFileDiscriptor;
     int error;
-    char buf[255];
+    char buf[64];
 
 private:
     void AddHeader();

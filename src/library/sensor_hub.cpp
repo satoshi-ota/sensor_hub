@@ -16,7 +16,7 @@ SensorHub::~SensorHub()
 bool SensorHub::openSensorHub()
 {
     char fileNameBuffer[32];
-    sprintf(fileNameBuffer, "/dev/ttyUSB0");
+    sprintf(fileNameBuffer, "/dev/ttyACM1");
     kFileDiscriptor = open(fileNameBuffer, O_RDWR);
 
     int baudRate = B57600;
@@ -57,32 +57,45 @@ void SensorHub::closeSensorHub()
 void SensorHub::readSensorHub()
 {
     read(kFileDiscriptor, buf, sizeof(buf));
+    //printf("%s\n", buf);
+    //char buff[] = "LD:1.234567~52\n";
     char *p;
     p = strstr(buf, "LD");
 
-    char temp[12];
-    strncpy(temp, p, 12);
-    temp[12] = '\0';
+    char *tilda;
+    tilda = strstr(buf, "~");
+
+    char temp[128];
+    strncpy(temp, p, abs(tilda - p + 1));
+    temp[abs(tilda - p + 1)] = '\0';
 
     char checknum[2];
-    strncpy(checknum, p+13, 2);
+    strncpy(checknum, tilda + 1, 2);
     checknum[2] = '\0';
 
     uint8_t checksum = 0x00;
     for (uint8_t i = 0; i < strlen(temp); i++)
         checksum ^= temp[i];
 
+    printf("%s\n", temp);
+    printf("%s\n", checknum);
+
     char chk[8];
     sprintf(chk, "%X", checksum);
 
     if(strncmp(chk, checknum, 2) == 0)
     {
-        char load[8];
-        strncpy(load, p+3, 8);
-        load[8] = '\0';
+        printf("Data Recieve!\n");
+        char load[128];
+        strncpy(load, p+3, abs(tilda - p));
+        load[abs(tilda - p + 1)] = '\0';
 
         load_ = atof(load);
     }
+}
+
+int abs(int num){
+   return (num > 0) ? num : -num;
 }
 
 void SensorHub::writeSensorHub()

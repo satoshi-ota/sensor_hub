@@ -8,7 +8,7 @@ SensorHubNode::SensorHubNode(
     :nh_(nh),
      private_nh_(private_nh)
 {
-    private_nh_.param("hz_", hz_, 10);
+    private_nh_.param("hz_", hz_, 20);
     private_nh_.param<std::string>("camera_focus_mode", camera_focus_mode_, "A");
     private_nh_.param("camera_focusing_params_a0", camera_focusing_params_a0_, 0.0);
     private_nh_.param("camera_focusing_params_a1", camera_focusing_params_a1_, 0.0);
