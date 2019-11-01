@@ -13,6 +13,7 @@ SensorHubNode::SensorHubNode(
     private_nh_.param("camera_focusing_params_a0", camera_focusing_params_a0_, 0.0);
     private_nh_.param("camera_focusing_params_a1", camera_focusing_params_a1_, 0.0);
     private_nh_.param("camera_focusing_params_a2", camera_focusing_params_a2_, 0.0);
+    private_nh_.param("camera_focus_value", camera_focus_value_, 0);
     private_nh_.param<std::string>("led_id", led_id_, "1");
     private_nh_.param("led_duty", led_duty_, 0.5);
     private_nh_.param("load_cell_samples", load_cell_samples_, 1);
@@ -39,11 +40,12 @@ SensorHubNode::~SensorHubNode()
 void SensorHubNode::SensorHubReconfigureCB(
                     sensor_hub::SensorHubConfig &config, uint32_t level)
 {
-    ROS_INFO("Reconfigure Request:CF[%s] CP[%f, %f, %f] LS[%d] DT[%s, %f]",
+    ROS_INFO("Reconfigure Request:CF[%s] CP[%f, %f, %f] CV[%d] LS[%d] DT[%s, %f]",
              config.camera_focus_mode.c_str(),
              config.camera_focusing_params_a0,
              config.camera_focusing_params_a1,
              config.camera_focusing_params_a2,
+             config.camera_focus_value,
              config.load_cell_samples,
              config.led_id.c_str(),
              config.led_duty);
@@ -52,6 +54,7 @@ void SensorHubNode::SensorHubReconfigureCB(
     camera_focusing_params_a0_ = config.camera_focusing_params_a0;
     camera_focusing_params_a1_ = config.camera_focusing_params_a1;
     camera_focusing_params_a2_ = config.camera_focusing_params_a2;
+    camera_focus_value_ = config.camera_focus_value;
     load_cell_samples_ = config.load_cell_samples;
     led_id_ = config.led_id;
     led_duty_ = config.led_duty;
@@ -65,6 +68,7 @@ void SensorHubNode::sendCommand()
     sensor_hub_.setCPa0(camera_focusing_params_a0_);
     sensor_hub_.setCPa1(camera_focusing_params_a1_);
     sensor_hub_.setCPa2(camera_focusing_params_a2_);
+    sensor_hub_.setCV(camera_focus_value_);
     sensor_hub_.setDTid(led_id_);
     sensor_hub_.setDTduty(led_duty_);
     sensor_hub_.setLS(load_cell_samples_);

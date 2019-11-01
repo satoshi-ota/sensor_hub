@@ -42,6 +42,8 @@ public:
                      {camera_focusing_params_a1_ = camera_focusing_params_a1;};
     void inline setCPa2(double camera_focusing_params_a2)
                      {camera_focusing_params_a2_ = camera_focusing_params_a2;};
+    void inline setCV(int camera_focus_value)
+                     {camera_focus_value_ = camera_focus_value;};
     void inline setDTid(std::string led_id)
                      {led_id_ = led_id;};
     void inline setDTduty(double led_duty)
@@ -66,6 +68,7 @@ private:
 
     void sendCF();
     void sendCP();
+    void sendCV();
     void sendLS();
     void sendDT();
 
@@ -80,12 +83,12 @@ private:
     double camera_focusing_params_a0_;
     double camera_focusing_params_a1_;
     double camera_focusing_params_a2_;
+    int camera_focus_value_;
     std::string led_id_;
     float led_duty_;
     int load_cell_samples_;
 
     std::string packet_;
-    std::string packet_header_;
     std::string packet_command_;
     std::string packet_contents_;
     std::string packet_checksum_;

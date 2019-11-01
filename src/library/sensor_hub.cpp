@@ -95,9 +95,10 @@ int abs(int num){
 
 void SensorHub::writeSensorHub()
 {
-    //sendCF();
-    //sendCP();
-    //sendLS();
+    sendCF();
+    sendCP();
+    sendCV();
+    sendLS();
     sendDT();
 }
 
@@ -127,6 +128,19 @@ void SensorHub::sendCP()
     //AddHeader();
     AddCommand("CP");
     AddContents(contents);
+    AddChecksum();
+    AddFooter();
+    //for debugging
+    //printf("%s\n", packet_.c_str());
+    write(kFileDiscriptor, packet_.c_str(), strlen(packet_.c_str()));
+}
+
+void SensorHub::sendCV()
+{
+    ClearPacket();
+    //AddHeader();
+    AddCommand("CV");
+    AddContents(std::to_string(camera_focus_value_));
     AddChecksum();
     AddFooter();
     //for debugging

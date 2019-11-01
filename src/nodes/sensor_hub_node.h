@@ -36,6 +36,7 @@ private:
     double camera_focusing_params_a0_;
     double camera_focusing_params_a1_;
     double camera_focusing_params_a2_;
+    int camera_focus_value_;
     std::string led_id_;
     double led_duty_;
     int load_cell_samples_;
