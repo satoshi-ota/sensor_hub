@@ -8,11 +8,13 @@ SensorHubNode::SensorHubNode(
     :nh_(nh),
      private_nh_(private_nh)
 {
-    private_nh_.param("hz_", hz_, 20);
+    //private_nh_.param("hz_", hz_, 20);
     private_nh_.param<std::string>("camera_focus_mode", camera_focus_mode_, "A");
     private_nh_.param("camera_focusing_params_a0", camera_focusing_params_a0_, 0.0);
     private_nh_.param("camera_focusing_params_a1", camera_focusing_params_a1_, 0.0);
     private_nh_.param("camera_focusing_params_a2", camera_focusing_params_a2_, 0.0);
+    private_nh_.param<std::string>("led_id", led_id_, "1");
+    private_nh_.param("led_duty", led_duty_, 0.5);
     private_nh_.param("load_cell_samples", load_cell_samples_, 1);
 
     srv_ = boost::make_shared <dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>>(private_nh);
@@ -37,18 +39,23 @@ SensorHubNode::~SensorHubNode()
 void SensorHubNode::SensorHubReconfigureCB(
                     sensor_hub::SensorHubConfig &config, uint32_t level)
 {
-    ROS_INFO("Reconfigure Request:CF[%s] CP[%f, %f, %f] LS[%d]",
+    ROS_INFO("Reconfigure Request:CF[%s] CP[%f, %f, %f] LS[%d] DT[%s, %f]",
              config.camera_focus_mode.c_str(),
              config.camera_focusing_params_a0,
              config.camera_focusing_params_a1,
              config.camera_focusing_params_a2,
-             config.load_cell_samples);
+             config.load_cell_samples,
+             config.led_id.c_str(),
+             config.led_duty);
 
-    camera_focus_mode_ = config.camera_focus_mode.c_str();
+    camera_focus_mode_ = config.camera_focus_mode;
     camera_focusing_params_a0_ = config.camera_focusing_params_a0;
     camera_focusing_params_a1_ = config.camera_focusing_params_a1;
     camera_focusing_params_a2_ = config.camera_focusing_params_a2;
     load_cell_samples_ = config.load_cell_samples;
+    led_id_ = config.led_id;
+    led_duty_ = config.led_duty;
+
     sendCommand();
 }
 
@@ -58,6 +65,8 @@ void SensorHubNode::sendCommand()
     sensor_hub_.setCPa0(camera_focusing_params_a0_);
     sensor_hub_.setCPa1(camera_focusing_params_a1_);
     sensor_hub_.setCPa2(camera_focusing_params_a2_);
+    sensor_hub_.setDTid(led_id_);
+    sensor_hub_.setDTduty(led_duty_);
     sensor_hub_.setLS(load_cell_samples_);
     sensor_hub_.writeSensorHub();
 }
@@ -89,14 +98,10 @@ int main(int argc, char** argv)
     ros::NodeHandle private_nh("~");
     sensor_hub::SensorHubNode sensor_hub_node(nh, private_nh);
 
-    int hz = sensor_hub_node.getHz();
-    ros::Rate loop_rate(hz);
-
     while (ros::ok())
     {
-        sensor_hub_node.readSensorData();
+        //sensor_hub_node.readSensorData();
         ros::spinOnce();
-        loop_rate.sleep();
     }
 
     return 0;

@@ -57,8 +57,6 @@ void SensorHub::closeSensorHub()
 void SensorHub::readSensorHub()
 {
     read(kFileDiscriptor, buf, sizeof(buf));
-    //printf("%s\n", buf);
-    //char buff[] = "LD:1.234567~52\n";
     char *p;
     p = strstr(buf, "LD");
 
@@ -76,9 +74,6 @@ void SensorHub::readSensorHub()
     uint8_t checksum = 0x00;
     for (uint8_t i = 0; i < strlen(temp); i++)
         checksum ^= temp[i];
-
-    printf("%s\n", temp);
-    printf("%s\n", checknum);
 
     char chk[8];
     sprintf(chk, "%X", checksum);
@@ -100,9 +95,10 @@ int abs(int num){
 
 void SensorHub::writeSensorHub()
 {
-    sendCF();
-    sendCP();
-    sendLS();
+    //sendCF();
+    //sendCP();
+    //sendLS();
+    sendDT();
 }
 
 void SensorHub::sendCF()
@@ -114,7 +110,7 @@ void SensorHub::sendCF()
     AddChecksum();
     AddFooter();
     //for debugging
-    printf("%s\n", packet_.c_str());
+    //printf("%s\n", packet_.c_str());
     write(kFileDiscriptor, packet_.c_str(), strlen(packet_.c_str()));
 }
 
@@ -134,7 +130,7 @@ void SensorHub::sendCP()
     AddChecksum();
     AddFooter();
     //for debugging
-    printf("%s\n", packet_.c_str());
+    //printf("%s\n", packet_.c_str());
     write(kFileDiscriptor, packet_.c_str(), strlen(packet_.c_str()));
 }
 
@@ -147,21 +143,31 @@ void SensorHub::sendLS()
     AddChecksum();
     AddFooter();
     //for debugging
+    //printf("%s\n", packet_.c_str());
+    write(kFileDiscriptor, packet_.c_str(), strlen(packet_.c_str()));
+}
+
+void SensorHub::sendDT()
+{
+    std::string contents = "";
+    contents.append(led_id_);
+    contents.append(",");
+    contents.append(std::to_string(led_duty_));
+    printf("%s\n", led_id_.c_str());
+
+    ClearPacket();
+    AddCommand("DT");
+    AddContents(contents);
+    AddChecksum();
+    AddFooter();
+
     printf("%s\n", packet_.c_str());
     write(kFileDiscriptor, packet_.c_str(), strlen(packet_.c_str()));
 }
 
-void SensorHub::AddHeader()
-{
-    packet_header_ = kHeader;
-    packet_.append(packet_header_);
-}
-
 void SensorHub::AddCommand(const std::string command)
 {
-    packet_command_ = kCommand;
-    packet_command_.append(command);
-    packet_.append(packet_command_);
+    packet_.append(command);
 }
 
 void SensorHub::AddContents(const std::string contents)

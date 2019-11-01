@@ -25,7 +25,6 @@ public:
     void sendCommand();
     void readSensorData();
 
-    int inline getHz(){return hz_;};
 private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
@@ -33,11 +32,12 @@ private:
     ros::Publisher load_pub_;
     ros::Publisher range_pub_;
 
-    int hz_;
     std::string camera_focus_mode_;
     double camera_focusing_params_a0_;
     double camera_focusing_params_a1_;
     double camera_focusing_params_a2_;
+    std::string led_id_;
+    double led_duty_;
     int load_cell_samples_;
 
     SensorHub sensor_hub_;
