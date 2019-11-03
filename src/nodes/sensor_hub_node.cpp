@@ -8,13 +8,12 @@ SensorHubNode::SensorHubNode(
     :nh_(nh),
      private_nh_(private_nh)
 {
-    //private_nh_.param("hz_", hz_, 20);
     private_nh_.param<std::string>("camera_focus_mode", camera_focus_mode_, "A");
     private_nh_.param("camera_focusing_params_a0", camera_focusing_params_a0_, 0.0);
     private_nh_.param("camera_focusing_params_a1", camera_focusing_params_a1_, 0.0);
     private_nh_.param("camera_focusing_params_a2", camera_focusing_params_a2_, 0.0);
     private_nh_.param("camera_focus_value", camera_focus_value_, 0);
-    private_nh_.param<std::string>("led_id", led_id_, "1");
+    private_nh_.param("led_id", led_id_, 1);
     private_nh_.param("led_duty", led_duty_, 0.5);
     private_nh_.param("load_cell_samples", load_cell_samples_, 1);
 
@@ -23,12 +22,14 @@ SensorHubNode::SensorHubNode(
         = boost::bind(&SensorHubNode::SensorHubReconfigureCB, this, _1, _2);
     srv_->setCallback(cb);
 
-    load_pub_ = nh_.advertise<geometry_msgs::WrenchStamped>
-                                    (hongo_msgs::default_topics::STATUS_LOAD, 0);
     range_pub_ = nh_.advertise<sensor_msgs::Range>
-                                    (hongo_msgs::default_topics::STATUS_RANGE, 0);
+                                    (hongo_msgs::default_topics::SENSOR_HUB_RANGE, 0);
+    focus_pub_ = nh_.advertise<std_msgs::UInt8>
+                                    (hongo_msgs::default_topics::SENSOR_HUB_FOCUS, 0);
+    load_pub_ = nh_.advertise<geometry_msgs::WrenchStamped>
+                                    (hongo_msgs::default_topics::SENSOR_HUB_LOAD, 0);
 
-    sensor_hub_.openSensorHub();
+    //sensor_hub_.openSensorHub();
     sendCommand();
 }
 
@@ -40,14 +41,14 @@ SensorHubNode::~SensorHubNode()
 void SensorHubNode::SensorHubReconfigureCB(
                     sensor_hub::SensorHubConfig &config, uint32_t level)
 {
-    ROS_INFO("Reconfigure Request:CF[%s] CP[%f, %f, %f] CV[%d] LS[%d] DT[%s, %f]",
+    ROS_INFO("Reconfigure Request:CF[%s] CP[%f, %f, %f] CV[%d] LS[%d] DT[%d, %f]",
              config.camera_focus_mode.c_str(),
              config.camera_focusing_params_a0,
              config.camera_focusing_params_a1,
              config.camera_focusing_params_a2,
              config.camera_focus_value,
              config.load_cell_samples,
-             config.led_id.c_str(),
+             config.led_id,
              config.led_duty);
 
     camera_focus_mode_ = config.camera_focus_mode;
@@ -79,12 +80,15 @@ void SensorHubNode::readSensorData()
 {
     sensor_hub_.readSensorHub();
 
-    //range_msg_.header.stamp = ros::Time::now();
-    //range_msg_.header.frame_id = "TFmini_frame";
-    //range_msg_.min_range = 0.3;
-    //range_msg_.max_range = 12.0;
-    //range_msg_.range = sensor_hub_.getRange();
-    //range_pub_.publish(range_msg_);
+    range_msg_.header.stamp = ros::Time::now();
+    range_msg_.header.frame_id = "TFmini_frame";
+    range_msg_.min_range = 0.3;
+    range_msg_.max_range = 12.0;
+    range_msg_.range = sensor_hub_.getRange();
+    range_pub_.publish(range_msg_);
+
+    focus_msg_.data = sensor_hub_.getFocus();
+    focus_pub_.publish(focus_msg_);
 
     load_msg_.header.stamp = ros::Time::now();
     load_msg_.header.frame_id = "load_cell_frame";
@@ -104,8 +108,9 @@ int main(int argc, char** argv)
 
     while (ros::ok())
     {
-        //sensor_hub_node.readSensorData();
+        sensor_hub_node.readSensorData();
         ros::spinOnce();
+        ros::Duration(0.5).sleep();
     }
 
     return 0;

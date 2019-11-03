@@ -5,6 +5,7 @@
 
 #include <ros/ros.h>
 #include <geometry_msgs/WrenchStamped.h>
+#include <std_msgs/UInt8.h>
 #include <sensor_msgs/Range.h>
 #include <dynamic_reconfigure/server.h>
 #include <sensor_hub/SensorHubConfig.h>
@@ -29,15 +30,17 @@ private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
 
-    ros::Publisher load_pub_;
+
     ros::Publisher range_pub_;
+    ros::Publisher focus_pub_;
+    ros::Publisher load_pub_;
 
     std::string camera_focus_mode_;
     double camera_focusing_params_a0_;
     double camera_focusing_params_a1_;
     double camera_focusing_params_a2_;
     int camera_focus_value_;
-    std::string led_id_;
+    int led_id_;
     double led_duty_;
     int load_cell_samples_;
 
@@ -45,6 +48,7 @@ private:
     boost::shared_ptr<dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>> srv_;
 
     sensor_msgs::Range range_msg_;
+    std_msgs::UInt8 focus_msg_;
     geometry_msgs::WrenchStamped load_msg_;
 };
 

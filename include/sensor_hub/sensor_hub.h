@@ -1,21 +1,15 @@
-#ifndef HONGO_SENSOR_HUB_SENSOR_HUB_H
-#define HONGO_SENSOR_HUB_SENSOR_HUB_H
+#ifndef SENSOR_HUB_SENSOR_HUB_H
+#define SENSOR_HUB_SENSOR_HUB_H
 
 #include <string>
+#include <string.h>
 #include <sys/ioctl.h>
-#include <cstdlib>
-#include <cstdio>
-#include <unistd.h>
 #include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <locale.h>
+
+#include <sensor_hub/protocol.h>
 
 namespace sensor_hub
 {
@@ -30,9 +24,9 @@ public:
 
     bool openSensorHub();
     void closeSensorHub();
-
+    bool validateCheckSum();
     void readSensorHub();
-    void writeSensorHub();
+    void writeSensorHub(){sendCF(); sendCP(); sendCV(); sendLS(); sendDT();};
 
     void inline setCF(std::string camera_focus_mode)
                      {camera_focus_mode_ = camera_focus_mode;};
@@ -44,57 +38,46 @@ public:
                      {camera_focusing_params_a2_ = camera_focusing_params_a2;};
     void inline setCV(int camera_focus_value)
                      {camera_focus_value_ = camera_focus_value;};
-    void inline setDTid(std::string led_id)
+    void inline setDTid(int led_id)
                      {led_id_ = led_id;};
     void inline setDTduty(double led_duty)
                      {led_duty_ = led_duty;};
     void inline setLS(int load_cell_samples)
                      {load_cell_samples_ = load_cell_samples;};
 
+    int inline getRange(){return range_;};
+    int inline getFocus(){return focus_;};
     double inline getLoad(){return load_;};
-    double inline getRange(){return range_;};
 
     int kFileDiscriptor;
     int error;
-    char buf[64];
+    char buf[64], temp[64];
+    char *p, *command, *contents, *checksum;
 
 private:
-    void AddHeader();
-    void AddCommand(const std::string command);
-    void AddContents(const std::string contents);
-    void AddChecksum();
-    void AddFooter();
-    void ClearPacket();
-
-    void sendCF();
-    void sendCP();
-    void sendCV();
-    void sendLS();
-    void sendDT();
-
-    const std::string kContents = ":";
-    const std::string kChecksum = "~";
-    const std::string kFooter = "\n";
-
-    double load_;
-    double range_;
-
     std::string camera_focus_mode_;
     double camera_focusing_params_a0_;
     double camera_focusing_params_a1_;
     double camera_focusing_params_a2_;
     int camera_focus_value_;
-    std::string led_id_;
+    int led_id_;
     float led_duty_;
     int load_cell_samples_;
 
-    std::string packet_;
-    std::string packet_command_;
-    std::string packet_contents_;
-    std::string packet_checksum_;
-    std::string packet_footer_;
+    Protocol protocol_;
+
+    int range_;
+    int focus_;
+    double load_;
+
+private:
+    void sendCF();
+    void sendCP();
+    void sendCV();
+    void sendLS();
+    void sendDT();
 };
 
 } //namespace sensor_hub
 
-#endif //HONGO_SENSOR_HUB_SENSOR_HUB_H
+#endif //SENSOR_HUB_SENSOR_HUB_H
