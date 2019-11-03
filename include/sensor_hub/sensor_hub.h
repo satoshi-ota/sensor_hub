@@ -51,7 +51,7 @@ public:
 
     int kFileDiscriptor;
     int error;
-    char buf[64], temp[64];
+    char buff[64], temp[64];
     char *p, *command, *contents, *checksum;
 
 private:

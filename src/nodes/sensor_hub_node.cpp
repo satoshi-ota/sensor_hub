@@ -29,7 +29,7 @@ SensorHubNode::SensorHubNode(
     load_pub_ = nh_.advertise<geometry_msgs::WrenchStamped>
                                     (hongo_msgs::default_topics::SENSOR_HUB_LOAD, 0);
 
-    //sensor_hub_.openSensorHub();
+    sensor_hub_.openSensorHub();
     sendCommand();
 }
 

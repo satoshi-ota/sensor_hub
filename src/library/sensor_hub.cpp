@@ -19,7 +19,7 @@ SensorHub::~SensorHub()
 bool SensorHub::openSensorHub()
 {
     char fileNameBuffer[32];
-    sprintf(fileNameBuffer, "/dev/ttyACM1");
+    sprintf(fileNameBuffer, "/dev/ttyUSB0");
     kFileDiscriptor = open(fileNameBuffer, O_RDWR);
 
     int baudRate = B57600;
@@ -61,6 +61,9 @@ bool SensorHub::validateCheckSum()
 {
     uint8_t calc_checksum = 0x00;
 
+    if((command == NULL) || (contents == NULL) || (checksum == NULL))
+        return false;
+
     calc_checksum ^= protocol_.calcCheckSum(command);
     calc_checksum ^= protocol_.calcCheckSum(protocol_.kContents);
     calc_checksum ^= protocol_.calcCheckSum(contents);
@@ -77,8 +80,8 @@ bool SensorHub::validateCheckSum()
 
 void SensorHub::readSensorHub()
 {
-    //read(kFileDiscriptor, buf, sizeof(buf));
-    char buff[] = "fasasafsagag\nCD:100~72\nDD:500~71\nLD:100.0~63\nfadsfdsdafas~.:fsadfdas";
+    //read(kFileDiscriptor, buff, sizeof(buff));
+    char buff[] = "100~72\ngsdDD:500~71\nffadsLD:10";
 
     strncpy(temp, buff, strlen(buff));
     temp[strlen(buff)] = '\0';
@@ -130,7 +133,8 @@ void SensorHub::sendCF()
     protocol_.AddContents(camera_focus_mode_);
     protocol_.AddChecksum();
     protocol_.AddFooter();
-    //write(kFileDiscriptor, protocol_.getPacket().c_str(), strlen(protocol_.getPacket().c_str()));
+    write(kFileDiscriptor, protocol_.getPacket().c_str(),
+          strlen(protocol_.getPacket().c_str()));
 }
 
 void SensorHub::sendCP()
@@ -147,7 +151,8 @@ void SensorHub::sendCP()
     protocol_.AddContents(contents);
     protocol_.AddChecksum();
     protocol_.AddFooter();
-    //write(kFileDiscriptor, protocol_.getPacket().c_str(), strlen(protocol_.getPacket().c_str()));
+    write(kFileDiscriptor, protocol_.getPacket().c_str(),
+          strlen(protocol_.getPacket().c_str()));
 }
 
 void SensorHub::sendCV()
@@ -157,7 +162,8 @@ void SensorHub::sendCV()
     protocol_.AddContents(std::to_string(camera_focus_value_));
     protocol_.AddChecksum();
     protocol_.AddFooter();
-    //write(kFileDiscriptor, protocol_.getPacket().c_str(), strlen(protocol_.getPacket().c_str()));
+    write(kFileDiscriptor, protocol_.getPacket().c_str(),
+          strlen(protocol_.getPacket().c_str()));
 }
 
 void SensorHub::sendLS()
@@ -167,7 +173,8 @@ void SensorHub::sendLS()
     protocol_.AddContents(std::to_string(load_cell_samples_));
     protocol_.AddChecksum();
     protocol_.AddFooter();
-    //write(kFileDiscriptor, protocol_.getPacket().c_str(), strlen(protocol_.getPacket().c_str()));
+    write(kFileDiscriptor, protocol_.getPacket().c_str(),
+          strlen(protocol_.getPacket().c_str()));
 }
 
 void SensorHub::sendDT()
@@ -182,7 +189,8 @@ void SensorHub::sendDT()
     protocol_.AddContents(contents);
     protocol_.AddChecksum();
     protocol_.AddFooter();
-    //write(kFileDiscriptor, protocol_.getPacket().c_str(), strlen(protocol_.getPacket().c_str()));
+    write(kFileDiscriptor, protocol_.getPacket().c_str(),
+          strlen(protocol_.getPacket().c_str()));
 }
 
 } //namespace sensor_hub

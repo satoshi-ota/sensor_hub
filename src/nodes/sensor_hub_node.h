@@ -30,7 +30,6 @@ private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
 
-
     ros::Publisher range_pub_;
     ros::Publisher focus_pub_;
     ros::Publisher load_pub_;
