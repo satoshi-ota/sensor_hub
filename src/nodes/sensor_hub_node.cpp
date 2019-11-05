@@ -48,6 +48,7 @@ SensorWriteNode::SensorWriteNode(
     :nh_(nh),
      private_nh_(private_nh)
 {
+    private_nh_.param<std::string>("port", port_, "/dev/ttyUSB0");
     private_nh_.param<std::string>("camera_focus_mode", camera_focus_mode_, "A");
     private_nh_.param("camera_focusing_params_a0", camera_focusing_params_a0_, 0.0);
     private_nh_.param("camera_focusing_params_a1", camera_focusing_params_a1_, 0.0);
@@ -56,6 +57,8 @@ SensorWriteNode::SensorWriteNode(
     private_nh_.param("led_id", led_id_, 1);
     private_nh_.param("led_duty", led_duty_, 0.5);
     private_nh_.param("load_cell_samples", load_cell_samples_, 1);
+
+    sensor_hub_.setPort(port_);
 
     srv_ = boost::make_shared <dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>>(private_nh);
     dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>::CallbackType cb
@@ -115,13 +118,15 @@ void readThread()
 {
     ros::NodeHandle nh;
     ros::NodeHandle private_nh("~");
-    sensor_hub::SensorReadNode sensor_hub_node(nh, private_nh);
+    sensor_hub::SensorReadNode sensor_read_node(nh, private_nh);
 
-    while (ros::ok())
+    while(ros::ok())
     {
-        sensor_hub_node.readSensorData();
+        sensor_read_node.readSensorData();
         ros::spinOnce();
     }
+
+    ros::shutdown();
 }
 
 void writeThread()
@@ -130,10 +135,12 @@ void writeThread()
     ros::NodeHandle private_nh("~");
     sensor_hub::SensorWriteNode sensor_write_node(nh, private_nh);
 
-    while (ros::ok())
+    while(ros::ok())
     {
         ros::spin();
     }
+
+    ros::shutdown();
 }
 
 int main(int argc, char** argv)
