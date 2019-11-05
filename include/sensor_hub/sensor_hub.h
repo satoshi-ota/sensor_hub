@@ -26,7 +26,13 @@ public:
     void closeSensorHub();
     bool validateCheckSum();
     void readSensorHub();
-    void writeSensorHub(){sendCF(); sendCP(); sendCV(); sendLS(); sendDT();};
+    void writeSensorHub(){
+        sendCF();
+        sendCP();
+        sendCV();
+        sendLS();
+        sendDT();
+    };
 
     void inline setCF(std::string camera_focus_mode)
                      {camera_focus_mode_ = camera_focus_mode;};
@@ -51,7 +57,7 @@ public:
 
     int kFileDiscriptor;
     int error;
-    char buff[64], temp[64];
+    char buff[128], temp[128];
     char *p, *command, *contents, *checksum;
 
 private:

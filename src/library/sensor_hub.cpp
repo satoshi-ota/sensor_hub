@@ -19,7 +19,7 @@ SensorHub::~SensorHub()
 bool SensorHub::openSensorHub()
 {
     char fileNameBuffer[32];
-    sprintf(fileNameBuffer, "/dev/ttyUSB0");
+    sprintf(fileNameBuffer, "/dev/ttyACM1");
     kFileDiscriptor = open(fileNameBuffer, O_RDWR);
 
     int baudRate = B57600;
@@ -80,48 +80,50 @@ bool SensorHub::validateCheckSum()
 
 void SensorHub::readSensorHub()
 {
-    //read(kFileDiscriptor, buff, sizeof(buff));
-    char buff[] = "100~72\ngsdDD:500~71\nffadsLD:10";
+    int len = read(kFileDiscriptor, buff, sizeof(buff));
 
-    strncpy(temp, buff, strlen(buff));
-    temp[strlen(buff)] = '\0';
-
-    if((p = strstr(temp, "DD"))!=NULL)
+    if(0 < len)
     {
-        command = strtok(p, protocol_.kContents.c_str());
-        contents = strtok(NULL, protocol_.kChecksum.c_str());
-        checksum = strtok(NULL, protocol_.kFooter.c_str());
-        if(validateCheckSum())
+        strncpy(temp, buff, strlen(buff));
+        temp[strlen(buff)] = '\0';
+
+        if((p = strstr(temp, "DD"))!=NULL)
         {
-            range_ = atof(contents);
+            command = strtok(p, protocol_.kContents.c_str());
+            contents = strtok(NULL, protocol_.kChecksum.c_str());
+            checksum = strtok(NULL, protocol_.kFooter.c_str());
+            if(validateCheckSum())
+            {
+                range_ = atof(contents);
+            }
         }
-    }
 
-    strncpy(temp, buff, strlen(buff));
-    temp[strlen(buff)] = '\0';
+        strncpy(temp, buff, strlen(buff));
+        temp[strlen(buff)] = '\0';
 
-    if((p = strstr(temp, "CD"))!=NULL)
-    {
-        command = strtok(p, protocol_.kContents.c_str());
-        contents = strtok(NULL, protocol_.kChecksum.c_str());
-        checksum = strtok(NULL, protocol_.kFooter.c_str());
-        if(validateCheckSum())
+        if((p = strstr(temp, "CD"))!=NULL)
         {
-            focus_ = atof(contents);
+            command = strtok(p, protocol_.kContents.c_str());
+            contents = strtok(NULL, protocol_.kChecksum.c_str());
+            checksum = strtok(NULL, protocol_.kFooter.c_str());
+            if(validateCheckSum())
+            {
+                focus_ = atof(contents);
+            }
         }
-    }
 
-    strncpy(temp, buff, strlen(buff));
-    temp[strlen(buff)] = '\0';
+        strncpy(temp, buff, strlen(buff));
+        temp[strlen(buff)] = '\0';
 
-    if((p = strstr(temp, "LD"))!=NULL)
-    {
-        command = strtok(p, protocol_.kContents.c_str());
-        contents = strtok(NULL, protocol_.kChecksum.c_str());
-        checksum = strtok(NULL, protocol_.kFooter.c_str());
-        if(validateCheckSum())
+        if((p = strstr(temp, "LD"))!=NULL)
         {
-            load_ = atof(contents);
+            command = strtok(p, protocol_.kContents.c_str());
+            contents = strtok(NULL, protocol_.kChecksum.c_str());
+            checksum = strtok(NULL, protocol_.kFooter.c_str());
+            if(validateCheckSum())
+            {
+                load_ = atof(contents);
+            }
         }
     }
 }
@@ -189,6 +191,7 @@ void SensorHub::sendDT()
     protocol_.AddContents(contents);
     protocol_.AddChecksum();
     protocol_.AddFooter();
+    printf("%s\n", protocol_.getPacket().c_str());
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
 }

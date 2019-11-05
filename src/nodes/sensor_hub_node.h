@@ -1,6 +1,7 @@
 #ifndef HONGO_SENSOR_HUB_SENSOR_HUB_NODE_H
 #define HONGO_SENSOR_HUB_SENSOR_HUB_NODE_H
 
+#include <thread>
 #include <string.h>
 
 #include <ros/ros.h>
@@ -22,8 +23,8 @@ public:
     SensorHubNode(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh);
     ~SensorHubNode();
 
-    void SensorHubReconfigureCB(sensor_hub::SensorHubConfig &config, uint32_t level);
-    void sendCommand();
+    //void SensorHubReconfigureCB(sensor_hub::SensorHubConfig &config, uint32_t level);
+    //void sendCommand();
     void readSensorData();
 
 private:
@@ -33,6 +34,36 @@ private:
     ros::Publisher range_pub_;
     ros::Publisher focus_pub_;
     ros::Publisher load_pub_;
+/*
+    std::string camera_focus_mode_;
+    double camera_focusing_params_a0_;
+    double camera_focusing_params_a1_;
+    double camera_focusing_params_a2_;
+    int camera_focus_value_;
+    int led_id_;
+    double led_duty_;
+    int load_cell_samples_;
+*/
+    SensorHub sensor_hub_;
+    //boost::shared_ptr<dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>> srv_;
+
+    sensor_msgs::Range range_msg_;
+    std_msgs::UInt8 focus_msg_;
+    geometry_msgs::WrenchStamped load_msg_;
+};
+
+class SensorWriteNode
+{
+public:
+    SensorWriteNode(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh);
+    ~SensorWriteNode();
+
+    void SensorHubReconfigureCB(sensor_hub::SensorHubConfig &config, uint32_t level);
+    void sendCommand();
+
+private:
+    ros::NodeHandle nh_;
+    ros::NodeHandle private_nh_;
 
     std::string camera_focus_mode_;
     double camera_focusing_params_a0_;
@@ -46,9 +77,6 @@ private:
     SensorHub sensor_hub_;
     boost::shared_ptr<dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>> srv_;
 
-    sensor_msgs::Range range_msg_;
-    std_msgs::UInt8 focus_msg_;
-    geometry_msgs::WrenchStamped load_msg_;
 };
 
 } //namespace sensor_hub
