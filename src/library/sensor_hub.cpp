@@ -191,7 +191,6 @@ void SensorHub::sendDT()
     protocol_.AddContents(contents);
     protocol_.AddChecksum();
     protocol_.AddFooter();
-    printf("%s\n", protocol_.getPacket().c_str());
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
 }

@@ -17,14 +17,12 @@
 namespace sensor_hub
 {
 
-class SensorHubNode
+class SensorReadNode
 {
 public:
-    SensorHubNode(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh);
-    ~SensorHubNode();
+    SensorReadNode(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh);
+    ~SensorReadNode();
 
-    //void SensorHubReconfigureCB(sensor_hub::SensorHubConfig &config, uint32_t level);
-    //void sendCommand();
     void readSensorData();
 
 private:
@@ -34,18 +32,8 @@ private:
     ros::Publisher range_pub_;
     ros::Publisher focus_pub_;
     ros::Publisher load_pub_;
-/*
-    std::string camera_focus_mode_;
-    double camera_focusing_params_a0_;
-    double camera_focusing_params_a1_;
-    double camera_focusing_params_a2_;
-    int camera_focus_value_;
-    int led_id_;
-    double led_duty_;
-    int load_cell_samples_;
-*/
+
     SensorHub sensor_hub_;
-    //boost::shared_ptr<dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>> srv_;
 
     sensor_msgs::Range range_msg_;
     std_msgs::UInt8 focus_msg_;
@@ -75,8 +63,8 @@ private:
     int load_cell_samples_;
 
     SensorHub sensor_hub_;
-    boost::shared_ptr<dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>> srv_;
 
+    boost::shared_ptr<dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>> srv_;
 };
 
 } //namespace sensor_hub
