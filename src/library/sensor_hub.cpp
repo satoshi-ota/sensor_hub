@@ -19,7 +19,6 @@ SensorHub::~SensorHub()
 bool SensorHub::openSensorHub()
 {
     char fileNameBuffer[32];
-    printf("%s\n", port_.c_str());
     sprintf(fileNameBuffer, "/dev/ttyACM1");
     kFileDiscriptor = open(fileNameBuffer, O_RDWR);
 
@@ -185,7 +184,7 @@ void SensorHub::sendDT()
     std::string contents = "";
     contents.append(std::to_string(led_id_));
     contents.append(",");
-    contents.append(std::to_string(led_duty_).substr(0, 3));
+    contents.append(std::to_string(led_duty_));
 
     protocol_.ClearPacket();
     protocol_.AddCommand("DT");

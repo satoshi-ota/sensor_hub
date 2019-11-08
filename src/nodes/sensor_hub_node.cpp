@@ -48,7 +48,6 @@ SensorWriteNode::SensorWriteNode(
     :nh_(nh),
      private_nh_(private_nh)
 {
-    private_nh_.param<std::string>("port", port_, "/dev/ttyUSB0");
     private_nh_.param<std::string>("camera_focus_mode", camera_focus_mode_, "A");
     private_nh_.param("camera_focusing_params_a0", camera_focusing_params_a0_, 0.0);
     private_nh_.param("camera_focusing_params_a1", camera_focusing_params_a1_, 0.0);
@@ -57,8 +56,6 @@ SensorWriteNode::SensorWriteNode(
     private_nh_.param("led_id", led_id_, 1);
     private_nh_.param("led_duty", led_duty_, 0.1);
     private_nh_.param("load_cell_samples", load_cell_samples_, 1);
-
-    sensor_hub_.setPort(port_);
 
     srv_ = boost::make_shared <dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>>(private_nh);
     dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>::CallbackType cb

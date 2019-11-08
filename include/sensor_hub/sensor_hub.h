@@ -34,8 +34,6 @@ public:
         sendDT();
     };
 
-    void inline setPort(std::string port)
-                     {port_ = port;};
     void inline setCF(std::string camera_focus_mode)
                      {camera_focus_mode_ = camera_focus_mode;};
     void inline setCPa0(double camera_focusing_params_a0)
@@ -63,11 +61,10 @@ public:
     char *p, *command, *contents, *checksum;
 
 private:
-    std::string port_;
     std::string camera_focus_mode_;
-    double camera_focusing_params_a0_;
-    double camera_focusing_params_a1_;
-    double camera_focusing_params_a2_;
+    float camera_focusing_params_a0_;
+    float camera_focusing_params_a1_;
+    float camera_focusing_params_a2_;
     int camera_focus_value_;
     int led_id_;
     float led_duty_;

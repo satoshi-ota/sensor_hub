@@ -53,7 +53,6 @@ private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
 
-    std::string port_;
     std::string camera_focus_mode_;
     double camera_focusing_params_a0_;
     double camera_focusing_params_a1_;
