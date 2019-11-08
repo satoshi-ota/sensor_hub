@@ -30,6 +30,7 @@ uint8_t Protocol::calcCheckSum(const char *c)
 
 void Protocol::AddCommand(const std::string command)
 {
+    packet_command_ = command;
     packet_.append(command);
 }
 
@@ -45,7 +46,6 @@ void Protocol::AddChecksum()
     uint8_t checksum = 0x00;
 
     checksum ^= calcCheckSum(packet_command_);
-    checksum ^= calcCheckSum(kContents);
     checksum ^= calcCheckSum(packet_contents_);
     checksum ^= calcCheckSum(kChecksum);
 

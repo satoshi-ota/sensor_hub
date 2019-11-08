@@ -55,7 +55,7 @@ SensorWriteNode::SensorWriteNode(
     private_nh_.param("camera_focusing_params_a2", camera_focusing_params_a2_, 0.0);
     private_nh_.param("camera_focus_value", camera_focus_value_, 0);
     private_nh_.param("led_id", led_id_, 1);
-    private_nh_.param("led_duty", led_duty_, 0.5);
+    private_nh_.param("led_duty", led_duty_, 0.1);
     private_nh_.param("load_cell_samples", load_cell_samples_, 1);
 
     sensor_hub_.setPort(port_);
