@@ -1,6 +1,12 @@
 <?xml version="1.0"?>
 
 <launch>
-    <node name="sensor_hub_node" pkg="sensor_hub" type="sensor_hub_node"/>
+    <arg name="port" default="ttyACM1"/>
+    <arg name="baud" default="57600"/>
+
+    <node name="sensor_hub_node" pkg="sensor_hub" type="sensor_hub_node">
+        <param name="port" value="$(arg port)"/>
+        <param name="baud" value="$(arg baud)"/>
+    </node>
     <node pkg="rqt_reconfigure" type="rqt_reconfigure" name="rqt_reconfigure"/>
 </launch>

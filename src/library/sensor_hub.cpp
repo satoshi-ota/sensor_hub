@@ -19,9 +19,10 @@ SensorHub::~SensorHub()
 bool SensorHub::openSensorHub(std::string port, int baud)
 {
     char fileNameBuffer[32];
-    sprintf(fileNameBuffer, "/dev/ttyACM1");
-    //sprintf(fileNameBuffer, port.c_str());
+    //sprintf(fileNameBuffer, "/dev/ttyUSB0");
+    sprintf(fileNameBuffer, "/dev/%s", port.c_str());
     kFileDiscriptor = open(fileNameBuffer, O_RDWR);
+    printf("port:%s, baud rate:%d\n", port.c_str(), baud);
 
     speed_t speed;
     switch (baud)
@@ -40,7 +41,7 @@ bool SensorHub::openSensorHub(std::string port, int baud)
                    break;
     }
 
-    int baudRate = speed;
+    //int baudRate = speed;
 
     tio.c_cflag += CREAD;
     tio.c_cflag += CLOCAL;
@@ -48,8 +49,8 @@ bool SensorHub::openSensorHub(std::string port, int baud)
     tio.c_cflag += 0;
     tio.c_cflag += 0;
 
-    cfsetispeed(&tio, baudRate);
-    cfsetospeed(&tio, baudRate);
+    cfsetispeed(&tio, speed);
+    cfsetospeed(&tio, speed);
 
     cfmakeraw(&tio);
 
