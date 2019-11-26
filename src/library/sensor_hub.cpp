@@ -40,7 +40,7 @@ bool SensorHub::openSensorHub(std::string port, int baud)
                    break;
     }
 
-    int baudRate = B57600;
+    int baudRate = speed;
 
     tio.c_cflag += CREAD;
     tio.c_cflag += CLOCAL;
