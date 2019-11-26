@@ -35,6 +35,9 @@ private:
 
     SensorHub sensor_hub_;
 
+    std::string port_;
+    int baud_;
+
     sensor_msgs::Range range_msg_;
     std_msgs::UInt8 focus_msg_;
     geometry_msgs::WrenchStamped load_msg_;
@@ -53,13 +56,14 @@ private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
 
+    std::string port_;
+    int baud_;
     std::string camera_focus_mode_;
     double camera_focusing_params_a0_;
     double camera_focusing_params_a1_;
     double camera_focusing_params_a2_;
     int camera_focus_value_;
-    int led_id_;
-    double led_duty_;
+    std::vector<double> led_duty_;
     int load_cell_samples_;
 
     SensorHub sensor_hub_;

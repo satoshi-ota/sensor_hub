@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <unistd.h>
+#include <vector>
 
 #include <sensor_hub/protocol.h>
 
@@ -22,7 +23,7 @@ public:
     SensorHub();
     ~SensorHub();
 
-    bool openSensorHub();
+    bool openSensorHub(std::string port, int baud);
     void closeSensorHub();
     bool validateCheckSum();
     void readSensorHub();
@@ -44,9 +45,7 @@ public:
                      {camera_focusing_params_a2_ = camera_focusing_params_a2;};
     void inline setCV(int camera_focus_value)
                      {camera_focus_value_ = camera_focus_value;};
-    void inline setDTid(int led_id)
-                     {led_id_ = led_id;};
-    void inline setDTduty(double led_duty)
+    void inline setDTduty(std::vector<double> led_duty)
                      {led_duty_ = led_duty;};
     void inline setLS(int load_cell_samples)
                      {load_cell_samples_ = load_cell_samples;};
@@ -66,8 +65,7 @@ private:
     float camera_focusing_params_a1_;
     float camera_focusing_params_a2_;
     int camera_focus_value_;
-    int led_id_;
-    float led_duty_;
+    std::vector<double> led_duty_;
     int load_cell_samples_;
 
     Protocol protocol_;

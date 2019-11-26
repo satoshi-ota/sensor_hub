@@ -16,11 +16,29 @@ SensorHub::~SensorHub()
     closeSensorHub();
 }
 
-bool SensorHub::openSensorHub()
+bool SensorHub::openSensorHub(std::string port, int baud)
 {
     char fileNameBuffer[32];
-    sprintf(fileNameBuffer, "/dev/ttyACM0");
+    sprintf(fileNameBuffer, "/dev/ttyACM1");
+    //sprintf(fileNameBuffer, port.c_str());
     kFileDiscriptor = open(fileNameBuffer, O_RDWR);
+
+    speed_t speed;
+    switch (baud)
+    {
+    case 4800:     speed = B4800;
+                   break;
+    case 9600:     speed = B9600;
+                   break;
+    case 19200:    speed = B19200;
+                   break;
+    case 38400:    speed = B38400;
+                   break;
+    case 57600:    speed = B57600;
+                   break;
+    case 115200:   speed = B115200;
+                   break;
+    }
 
     int baudRate = B57600;
 
@@ -181,18 +199,21 @@ void SensorHub::sendLS()
 
 void SensorHub::sendDT()
 {
-    std::string contents = "";
-    contents.append(std::to_string(led_id_));
-    contents.append(",");
-    contents.append(std::to_string(led_duty_));
+    for(int i = 0; i < led_duty_.size(); i++)
+    {
+        std::string contents = "";
+        contents.append(std::to_string(i));
+        contents.append(",");
+        contents.append(std::to_string(led_duty_[i]));
 
-    protocol_.ClearPacket();
-    protocol_.AddCommand("DT");
-    protocol_.AddContents(contents);
-    protocol_.AddChecksum();
-    protocol_.AddFooter();
-    write(kFileDiscriptor, protocol_.getPacket().c_str(),
-          strlen(protocol_.getPacket().c_str()));
+        protocol_.ClearPacket();
+        protocol_.AddCommand("DT");
+        protocol_.AddContents(contents);
+        protocol_.AddChecksum();
+        protocol_.AddFooter();
+        write(kFileDiscriptor, protocol_.getPacket().c_str(),
+              strlen(protocol_.getPacket().c_str()));
+    }
 }
 
 } //namespace sensor_hub
