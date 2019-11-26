@@ -19,7 +19,7 @@ SensorHub::~SensorHub()
 bool SensorHub::openSensorHub()
 {
     char fileNameBuffer[32];
-    sprintf(fileNameBuffer, "/dev/ttyACM1");
+    sprintf(fileNameBuffer, "/dev/ttyACM0");
     kFileDiscriptor = open(fileNameBuffer, O_RDWR);
 
     int baudRate = B57600;
