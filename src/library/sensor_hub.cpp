@@ -19,10 +19,9 @@ SensorHub::~SensorHub()
 bool SensorHub::openSensorHub(std::string port, int baud)
 {
     char fileNameBuffer[32];
-    //sprintf(fileNameBuffer, "/dev/ttyUSB0");
     sprintf(fileNameBuffer, "/dev/%s", port.c_str());
     kFileDiscriptor = open(fileNameBuffer, O_RDWR);
-    printf("port:%s, baud rate:%d\n", port.c_str(), baud);
+    printf("port:%s, baud rate:%d\n", fileNameBuffer, baud);
 
     speed_t speed;
     switch (baud)
@@ -147,6 +146,45 @@ void SensorHub::readSensorHub()
     }
 }
 
+void SensorHub::writeSensorHub()
+{
+    if(camera_focus_mode_ != prev_focus_mode_)
+    {
+        sendCF();
+        prev_focus_mode_ = camera_focus_mode_;
+    }
+
+    if(camera_focusing_params_ != prev_focusing_params_)
+    {
+        sendCP();
+        prev_focusing_params_ = camera_focusing_params_;
+    }
+
+    if(camera_focus_value_ != prev_focus_value_)
+    {
+        sendCV();
+        prev_focus_value_ = camera_focus_value_;
+    }
+
+    if(load_cell_samples_ != prev_cell_samples_)
+    {
+        sendLS();
+        prev_cell_samples_ = load_cell_samples_;
+    }
+
+    if(prev_duty_.size() > 0)
+    {
+        for(int i = 0; i < led_duty_.size(); i++)
+            if(led_duty_[i] != prev_duty_[i]) sendDT(i, led_duty_[i]);
+        prev_duty_ = led_duty_;
+    }
+    else
+    {
+        for(int i = 0; i < led_duty_.size(); i++) sendDT(i, led_duty_[i]);
+        prev_duty_ = led_duty_;
+    }
+};
+
 void SensorHub::sendCF()
 {
     protocol_.ClearPacket();
@@ -156,16 +194,17 @@ void SensorHub::sendCF()
     protocol_.AddFooter();
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
+    // printf("%s\n", protocol_.getPacket().c_str());
 }
 
 void SensorHub::sendCP()
 {
     std::string contents = "";
-    contents.append(std::to_string(camera_focusing_params_a0_));
+    contents.append(std::to_string(camera_focusing_params_[0]));
     contents.append(",");
-    contents.append(std::to_string(camera_focusing_params_a1_));
+    contents.append(std::to_string(camera_focusing_params_[1]));
     contents.append(",");
-    contents.append(std::to_string(camera_focusing_params_a2_));
+    contents.append(std::to_string(camera_focusing_params_[2]));
 
     protocol_.ClearPacket();
     protocol_.AddCommand("CP");
@@ -174,6 +213,7 @@ void SensorHub::sendCP()
     protocol_.AddFooter();
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
+    // printf("%s\n", protocol_.getPacket().c_str());
 }
 
 void SensorHub::sendCV()
@@ -185,6 +225,7 @@ void SensorHub::sendCV()
     protocol_.AddFooter();
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
+    // printf("%s\n", protocol_.getPacket().c_str());
 }
 
 void SensorHub::sendLS()
@@ -196,25 +237,24 @@ void SensorHub::sendLS()
     protocol_.AddFooter();
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
+    // printf("%s\n", protocol_.getPacket().c_str());
 }
 
-void SensorHub::sendDT()
+void SensorHub::sendDT(int id, float duty)
 {
-    for(int i = 0; i < led_duty_.size(); i++)
-    {
-        std::string contents = "";
-        contents.append(std::to_string(i));
-        contents.append(",");
-        contents.append(std::to_string(led_duty_[i]));
+    std::string contents = "";
+    contents.append(std::to_string(id+1));
+    contents.append(",");
+    contents.append(std::to_string(duty));
 
-        protocol_.ClearPacket();
-        protocol_.AddCommand("DT");
-        protocol_.AddContents(contents);
-        protocol_.AddChecksum();
-        protocol_.AddFooter();
-        write(kFileDiscriptor, protocol_.getPacket().c_str(),
-              strlen(protocol_.getPacket().c_str()));
-    }
+    protocol_.ClearPacket();
+    protocol_.AddCommand("DT");
+    protocol_.AddContents(contents);
+    protocol_.AddChecksum();
+    protocol_.AddFooter();
+    write(kFileDiscriptor, protocol_.getPacket().c_str(),
+          strlen(protocol_.getPacket().c_str()));
+    // printf("%s\n", protocol_.getPacket().c_str());
 }
 
 } //namespace sensor_hub

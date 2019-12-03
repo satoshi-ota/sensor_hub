@@ -27,25 +27,15 @@ public:
     void closeSensorHub();
     bool validateCheckSum();
     void readSensorHub();
-    void writeSensorHub(){
-        sendCF();
-        sendCP();
-        sendCV();
-        sendLS();
-        sendDT();
-    };
+    void writeSensorHub();
 
     void inline setCF(std::string camera_focus_mode)
                      {camera_focus_mode_ = camera_focus_mode;};
-    void inline setCPa0(double camera_focusing_params_a0)
-                     {camera_focusing_params_a0_ = camera_focusing_params_a0;};
-    void inline setCPa1(double camera_focusing_params_a1)
-                     {camera_focusing_params_a1_ = camera_focusing_params_a1;};
-    void inline setCPa2(double camera_focusing_params_a2)
-                     {camera_focusing_params_a2_ = camera_focusing_params_a2;};
+    void inline setCP(std::vector<float> camera_focusing_params)
+                     {camera_focusing_params_ = camera_focusing_params;};
     void inline setCV(int camera_focus_value)
                      {camera_focus_value_ = camera_focus_value;};
-    void inline setDTduty(std::vector<double> led_duty)
+    void inline setDT(std::vector<float> led_duty)
                      {led_duty_ = led_duty;};
     void inline setLS(int load_cell_samples)
                      {load_cell_samples_ = load_cell_samples;};
@@ -60,13 +50,11 @@ public:
     char *p, *command, *contents, *checksum;
 
 private:
-    std::string camera_focus_mode_;
-    float camera_focusing_params_a0_;
-    float camera_focusing_params_a1_;
-    float camera_focusing_params_a2_;
-    int camera_focus_value_;
-    std::vector<double> led_duty_;
-    int load_cell_samples_;
+    std::string camera_focus_mode_, prev_focus_mode_;
+    std::vector<float> camera_focusing_params_, prev_focusing_params_;
+    int camera_focus_value_, prev_focus_value_;
+    std::vector<float> led_duty_, prev_duty_;
+    int load_cell_samples_, prev_cell_samples_;
 
     Protocol protocol_;
 
@@ -79,7 +67,7 @@ private:
     void sendCP();
     void sendCV();
     void sendLS();
-    void sendDT();
+    void sendDT(int id, float duty);
 };
 
 } //namespace sensor_hub

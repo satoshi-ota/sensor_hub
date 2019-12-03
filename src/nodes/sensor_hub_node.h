@@ -59,11 +59,9 @@ private:
     std::string port_;
     int baud_;
     std::string camera_focus_mode_;
-    double camera_focusing_params_a0_;
-    double camera_focusing_params_a1_;
-    double camera_focusing_params_a2_;
+    std::vector<float> camera_focusing_params_;
     int camera_focus_value_;
-    std::vector<double> led_duty_;
+    std::vector<float> led_duty_;
     int load_cell_samples_;
 
     SensorHub sensor_hub_;
