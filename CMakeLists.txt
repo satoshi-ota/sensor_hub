@@ -35,3 +35,7 @@ add_library(sensor_hub
 add_executable(sensor_hub_node src/nodes/sensor_hub_node.cpp)
 add_dependencies(sensor_hub_node sensor_hub_gencfg ${catkin_EXPORTED_TARGETS})
 target_link_libraries(sensor_hub_node sensor_hub ${catkin_LIBRARIES})
+
+add_executable(param_set_node src/nodes/param_set_node.cpp)
+add_dependencies(param_set_node sensor_hub_gencfg ${catkin_EXPORTED_TARGETS})
+target_link_libraries(param_set_node sensor_hub ${catkin_LIBRARIES})
