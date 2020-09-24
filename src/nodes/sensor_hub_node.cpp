@@ -35,23 +35,40 @@ void SensorReadNode::readSensorData()
 SensorWriteNode::SensorWriteNode(
     const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
     :nh_(nh),
-     private_nh_(private_nh)
+     private_nh_(private_nh),
+     initialized_(false)
 {
     private_nh_.param<std::string>("port", port_, "ttyUSB0");
     private_nh_.param("baud", baud_, 57600);
+
+    if(!sensor_hub_.openSensorHub(port_, baud_)){
+        ROS_INFO("Could not open serial port!");
+    }
 
     srv_ = boost::make_shared <dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>>(private_nh);
     dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>::CallbackType cb
         = boost::bind(&SensorWriteNode::SensorHubReconfigureCB, this, _1, _2);
     srv_->setCallback(cb);
 
-    sensor_hub_.openSensorHub(port_, baud_);
     sendCommand();
+
+    winch_speed_sub_ = nh_.subscribe<std_msgs::Int32>("winch_speed", 10, &SensorWriteNode::commandCB, this);
+
+    initialized_ = true;
 }
 
 SensorWriteNode::~SensorWriteNode()
 {
     sensor_hub_.closeSensorHub();
+}
+
+void SensorWriteNode::commandCB(const std_msgs::Int32::ConstPtr& msg)
+{
+    if(!initialized_)
+        return;
+
+    winch_speed_ = msg->data;
+    sendCommand();
 }
 
 void SensorWriteNode::SensorHubReconfigureCB(

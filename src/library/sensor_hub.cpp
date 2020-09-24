@@ -18,6 +18,7 @@ bool SensorHub::openSensorHub(std::string port, int baud)
 {
     char fileNameBuffer[32];
     sprintf(fileNameBuffer, "/dev/%s", port.c_str());
+    ROS_INFO("Accsess request...");
     kFileDiscriptor = open(fileNameBuffer, O_RDWR);
     ROS_INFO("port:%s, baud rate:%d\n", fileNameBuffer, baud);
 
