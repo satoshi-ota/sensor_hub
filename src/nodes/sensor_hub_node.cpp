@@ -11,12 +11,8 @@ SensorReadNode::SensorReadNode(
     private_nh_.param<std::string>("port", port_, "ttyACM1");
     private_nh_.param("baud", baud_, 57600);
 
-    range_pub_ = nh_.advertise<sensor_msgs::Range>
-                                    (hongo_msgs::default_topics::SENSOR_HUB_RANGE, 0);
-    focus_pub_ = nh_.advertise<std_msgs::UInt8>
-                                    (hongo_msgs::default_topics::SENSOR_HUB_FOCUS, 0);
     load_pub_ = nh_.advertise<geometry_msgs::WrenchStamped>
-                                    (hongo_msgs::default_topics::SENSOR_HUB_LOAD, 0);
+                                    ("/sensor_hub/load", 0);
 
     sensor_hub_.openSensorHub(port_, baud_);
 }
@@ -30,16 +26,6 @@ void SensorReadNode::readSensorData()
 {
     sensor_hub_.readSensorHub();
 
-    range_msg_.header.stamp = ros::Time::now();
-    range_msg_.header.frame_id = "TFmini_frame";
-    range_msg_.min_range = 0.3;
-    range_msg_.max_range = 12.0;
-    range_msg_.range = sensor_hub_.getRange();
-    range_pub_.publish(range_msg_);
-
-    focus_msg_.data = sensor_hub_.getFocus();
-    focus_pub_.publish(focus_msg_);
-
     load_msg_.header.stamp = ros::Time::now();
     load_msg_.header.frame_id = "load_cell_frame";
     load_msg_.wrench.force.z = sensor_hub_.getLoad();
@@ -51,7 +37,7 @@ SensorWriteNode::SensorWriteNode(
     :nh_(nh),
      private_nh_(private_nh)
 {
-    private_nh_.param<std::string>("port", port_, "ttyACM1");
+    private_nh_.param<std::string>("port", port_, "ttyUSB0");
     private_nh_.param("baud", baud_, 57600);
 
     srv_ = boost::make_shared <dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>>(private_nh);
@@ -71,30 +57,15 @@ SensorWriteNode::~SensorWriteNode()
 void SensorWriteNode::SensorHubReconfigureCB(
                     sensor_hub::SensorHubConfig &config, uint32_t level)
 {
-    camera_focusing_params_.clear();
-    led_duty_.clear();
-
-    camera_focus_mode_ = config.camera_focus_mode;
-    camera_focusing_params_.push_back(config.camera_focusing_params_a0);
-    camera_focusing_params_.push_back(config.camera_focusing_params_a1);
-    camera_focusing_params_.push_back(config.camera_focusing_params_a2);
-    camera_focus_value_ = config.camera_focus_value;
+    winch_speed_ = config.winch_speed;
     load_cell_samples_ = config.load_cell_samples;
-    led_duty_.push_back(config.led_duty1);
-    led_duty_.push_back(config.led_duty2);
-    led_duty_.push_back(config.led_duty2);
-    led_duty_.push_back(config.led_duty2);
-    led_duty_.push_back(config.led_duty2);
 
     sendCommand();
 }
 
 void SensorWriteNode::sendCommand()
 {
-    sensor_hub_.setCF(camera_focus_mode_);
-    sensor_hub_.setCP(camera_focusing_params_);
-    sensor_hub_.setCV(camera_focus_value_);
-    sensor_hub_.setDT(led_duty_);
+    sensor_hub_.setWS(winch_speed_);
     sensor_hub_.setLS(load_cell_samples_);
     sensor_hub_.writeSensorHub();
 }

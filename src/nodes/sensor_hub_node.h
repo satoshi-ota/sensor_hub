@@ -1,5 +1,5 @@
-#ifndef HONGO_SENSOR_HUB_SENSOR_HUB_NODE_H
-#define HONGO_SENSOR_HUB_SENSOR_HUB_NODE_H
+#ifndef SENSOR_HUB_SENSOR_HUB_NODE_H
+#define SENSOR_HUB_SENSOR_HUB_NODE_H
 
 #include <thread>
 #include <string.h>
@@ -11,8 +11,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <sensor_hub/SensorHubConfig.h>
 
-#include "hongo_msgs/default_topics.h"
-#include "sensor_hub/sensor_hub.h"
+#include <sensor_hub/sensor_hub.h>
 
 namespace sensor_hub
 {
@@ -29,8 +28,6 @@ private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
 
-    ros::Publisher range_pub_;
-    ros::Publisher focus_pub_;
     ros::Publisher load_pub_;
 
     SensorHub sensor_hub_;
@@ -38,8 +35,6 @@ private:
     std::string port_;
     int baud_;
 
-    sensor_msgs::Range range_msg_;
-    std_msgs::UInt8 focus_msg_;
     geometry_msgs::WrenchStamped load_msg_;
 };
 
@@ -58,10 +53,7 @@ private:
 
     std::string port_;
     int baud_;
-    std::string camera_focus_mode_;
-    std::vector<float> camera_focusing_params_;
-    int camera_focus_value_;
-    std::vector<float> led_duty_;
+    int winch_speed_;
     int load_cell_samples_;
 
     SensorHub sensor_hub_;
@@ -71,4 +63,4 @@ private:
 
 } //namespace sensor_hub
 
-#endif //HONGO_SENSOR_HUB_SENSOR_HUB_NODE_H
+#endif //SENSOR_HUB_SENSOR_HUB_NODE_H

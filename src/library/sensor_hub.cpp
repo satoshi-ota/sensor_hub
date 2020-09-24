@@ -6,8 +6,6 @@ namespace sensor_hub
 SensorHub::SensorHub()
 {
     error = 0;
-    range_ = 0;
-    focus_ = 0;
     load_ = 0.0;
 }
 
@@ -21,7 +19,7 @@ bool SensorHub::openSensorHub(std::string port, int baud)
     char fileNameBuffer[32];
     sprintf(fileNameBuffer, "/dev/%s", port.c_str());
     kFileDiscriptor = open(fileNameBuffer, O_RDWR);
-    printf("port:%s, baud rate:%d\n", fileNameBuffer, baud);
+    ROS_INFO("port:%s, baud rate:%d\n", fileNameBuffer, baud);
 
     speed_t speed;
     switch (baud)
@@ -105,34 +103,6 @@ void SensorHub::readSensorHub()
         strncpy(temp, buff, strlen(buff));
         temp[strlen(buff)] = '\0';
 
-        if((p = strstr(temp, "DD"))!=NULL)
-        {
-            command = strtok(p, protocol_.kContents.c_str());
-            contents = strtok(NULL, protocol_.kChecksum.c_str());
-            checksum = strtok(NULL, protocol_.kFooter.c_str());
-            if(validateCheckSum())
-            {
-                range_ = atof(contents);
-            }
-        }
-
-        strncpy(temp, buff, strlen(buff));
-        temp[strlen(buff)] = '\0';
-
-        if((p = strstr(temp, "CD"))!=NULL)
-        {
-            command = strtok(p, protocol_.kContents.c_str());
-            contents = strtok(NULL, protocol_.kChecksum.c_str());
-            checksum = strtok(NULL, protocol_.kFooter.c_str());
-            if(validateCheckSum())
-            {
-                focus_ = atof(contents);
-            }
-        }
-
-        strncpy(temp, buff, strlen(buff));
-        temp[strlen(buff)] = '\0';
-
         if((p = strstr(temp, "LD"))!=NULL)
         {
             command = strtok(p, protocol_.kContents.c_str());
@@ -148,84 +118,29 @@ void SensorHub::readSensorHub()
 
 void SensorHub::writeSensorHub()
 {
-    if(camera_focus_mode_ != prev_focus_mode_)
+    if(winch_speed_ != prev_winch_speed_)
     {
-        sendCF();
-        prev_focus_mode_ = camera_focus_mode_;
+        sendWS();
+        prev_winch_speed_ = winch_speed_;
     }
 
-    if(camera_focusing_params_ != prev_focusing_params_)
-    {
-        sendCP();
-        prev_focusing_params_ = camera_focusing_params_;
-    }
-
-    if(camera_focus_value_ != prev_focus_value_)
-    {
-        sendCV();
-        prev_focus_value_ = camera_focus_value_;
-    }
-
-    if(load_cell_samples_ != prev_cell_samples_)
+    if(load_cell_samples_ != prev_load_cell_samples_)
     {
         sendLS();
-        prev_cell_samples_ = load_cell_samples_;
-    }
-
-    if(prev_duty_.size() > 0)
-    {
-        for(int i = 0; i < led_duty_.size(); i++)
-            if(led_duty_[i] != prev_duty_[i]) sendDT(i, led_duty_[i]);
-        prev_duty_ = led_duty_;
-    }
-    else
-    {
-        for(int i = 0; i < led_duty_.size(); i++) sendDT(i, led_duty_[i]);
-        prev_duty_ = led_duty_;
+        prev_load_cell_samples_ = load_cell_samples_;
     }
 };
 
-void SensorHub::sendCF()
+void SensorHub::sendWS()
 {
     protocol_.ClearPacket();
-    protocol_.AddCommand("CF");
-    protocol_.AddContents(camera_focus_mode_);
+    protocol_.AddCommand("WS");
+    protocol_.AddContents(std::to_string(winch_speed_));
     protocol_.AddChecksum();
     protocol_.AddFooter();
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
-    // printf("%s\n", protocol_.getPacket().c_str());
-}
-
-void SensorHub::sendCP()
-{
-    std::string contents = "";
-    contents.append(std::to_string(camera_focusing_params_[0]));
-    contents.append(",");
-    contents.append(std::to_string(camera_focusing_params_[1]));
-    contents.append(",");
-    contents.append(std::to_string(camera_focusing_params_[2]));
-
-    protocol_.ClearPacket();
-    protocol_.AddCommand("CP");
-    protocol_.AddContents(contents);
-    protocol_.AddChecksum();
-    protocol_.AddFooter();
-    write(kFileDiscriptor, protocol_.getPacket().c_str(),
-          strlen(protocol_.getPacket().c_str()));
-    // printf("%s\n", protocol_.getPacket().c_str());
-}
-
-void SensorHub::sendCV()
-{
-    protocol_.ClearPacket();
-    protocol_.AddCommand("CV");
-    protocol_.AddContents(std::to_string(camera_focus_value_));
-    protocol_.AddChecksum();
-    protocol_.AddFooter();
-    write(kFileDiscriptor, protocol_.getPacket().c_str(),
-          strlen(protocol_.getPacket().c_str()));
-    // printf("%s\n", protocol_.getPacket().c_str());
+    ROS_DEBUG("%s\n", protocol_.getPacket().c_str());
 }
 
 void SensorHub::sendLS()
@@ -237,24 +152,7 @@ void SensorHub::sendLS()
     protocol_.AddFooter();
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
-    // printf("%s\n", protocol_.getPacket().c_str());
-}
-
-void SensorHub::sendDT(int id, float duty)
-{
-    std::string contents = "";
-    contents.append(std::to_string(id+1));
-    contents.append(",");
-    contents.append(std::to_string(duty));
-
-    protocol_.ClearPacket();
-    protocol_.AddCommand("DT");
-    protocol_.AddContents(contents);
-    protocol_.AddChecksum();
-    protocol_.AddFooter();
-    write(kFileDiscriptor, protocol_.getPacket().c_str(),
-          strlen(protocol_.getPacket().c_str()));
-    // printf("%s\n", protocol_.getPacket().c_str());
+    ROS_DEBUG("%s\n", protocol_.getPacket().c_str());
 }
 
 } //namespace sensor_hub

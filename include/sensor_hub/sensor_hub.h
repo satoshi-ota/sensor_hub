@@ -9,6 +9,7 @@
 #include <termios.h>
 #include <unistd.h>
 #include <vector>
+#include <ros/ros.h>
 
 #include <sensor_hub/protocol.h>
 
@@ -29,19 +30,11 @@ public:
     void readSensorHub();
     void writeSensorHub();
 
-    void inline setCF(std::string camera_focus_mode)
-                     {camera_focus_mode_ = camera_focus_mode;};
-    void inline setCP(std::vector<float> camera_focusing_params)
-                     {camera_focusing_params_ = camera_focusing_params;};
-    void inline setCV(int camera_focus_value)
-                     {camera_focus_value_ = camera_focus_value;};
-    void inline setDT(std::vector<float> led_duty)
-                     {led_duty_ = led_duty;};
+    void inline setWS(int winch_speed)
+                     {winch_speed_ = winch_speed;};
     void inline setLS(int load_cell_samples)
                      {load_cell_samples_ = load_cell_samples;};
 
-    int inline getRange(){return range_;};
-    int inline getFocus(){return focus_;};
     double inline getLoad(){return load_;};
 
     int kFileDiscriptor;
@@ -50,24 +43,16 @@ public:
     char *p, *command, *contents, *checksum;
 
 private:
-    std::string camera_focus_mode_, prev_focus_mode_;
-    std::vector<float> camera_focusing_params_, prev_focusing_params_;
-    int camera_focus_value_, prev_focus_value_;
-    std::vector<float> led_duty_, prev_duty_;
-    int load_cell_samples_, prev_cell_samples_;
+    int winch_speed_, prev_winch_speed_;
+    int load_cell_samples_, prev_load_cell_samples_;
 
     Protocol protocol_;
 
-    int range_;
-    int focus_;
     double load_;
 
 private:
-    void sendCF();
-    void sendCP();
-    void sendCV();
+    void sendWS();
     void sendLS();
-    void sendDT(int id, float duty);
 };
 
 } //namespace sensor_hub

@@ -1,10 +1,13 @@
 <?xml version="1.0"?>
 
 <launch>
-    <arg name="port" default="ttyACM1"/>
+    <arg name="debug" default="false"/>
+    <arg name="prefix" value="" unless="$(arg debug)"/>
+    <arg name="prefix" value="gdb -ex run --args" if="$(arg debug)"/>
+    <arg name="port" default="ttyUSB0"/>
     <arg name="baud" default="57600"/>
 
-    <node name="sensor_hub_node" pkg="sensor_hub" type="sensor_hub_node">
+    <node name="sensor_hub_node" pkg="sensor_hub" type="sensor_hub_node" output="screen">
         <param name="port" value="$(arg port)"/>
         <param name="baud" value="$(arg baud)"/>
     </node>

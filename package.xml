@@ -13,6 +13,6 @@
   <depend>std_msgs</depend>
   <depend>sensor_msgs</depend>
   <depend>geometry_msgs</depend>
-  <depend>hongo_msgs</depend>
+  <depend>dynamic_reconfigure</depend>
 
 </package>
