@@ -8,6 +8,7 @@
 #include <geometry_msgs/WrenchStamped.h>
 #include <std_msgs/UInt8.h>
 #include <std_msgs/Int32.h>
+#include <std_msgs/Bool.h>
 #include <sensor_msgs/Range.h>
 #include <dynamic_reconfigure/server.h>
 #include <sensor_hub/SensorHubConfig.h>
@@ -29,7 +30,7 @@ private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
 
-    ros::Publisher load_pub_;
+    // ros::Publisher load_pub_;
 
     SensorHub sensor_hub_;
 
@@ -45,19 +46,18 @@ public:
     SensorWriteNode(const ros::NodeHandle& nh, const ros::NodeHandle& private_nh);
     ~SensorWriteNode();
 
-    void commandCB(const std_msgs::Int32::ConstPtr& msg);
+    void commandCB(const std_msgs::Bool::ConstPtr& msg);
     void SensorHubReconfigureCB(sensor_hub::SensorHubConfig &config, uint32_t level);
     void sendCommand();
 
 private:
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
-    ros::Subscriber winch_speed_sub_;
+    ros::Subscriber purge_unit_sub_;
 
     std::string port_;
     int baud_;
-    int winch_speed_;
-    int load_cell_samples_;
+    bool unlock_;
 
     SensorHub sensor_hub_;
 

@@ -11,8 +11,8 @@ SensorReadNode::SensorReadNode(
     private_nh_.param<std::string>("port", port_, "ttyACM1");
     private_nh_.param("baud", baud_, 57600);
 
-    load_pub_ = nh_.advertise<geometry_msgs::WrenchStamped>
-                                    ("/sensor_hub/load", 0);
+    // load_pub_ = nh_.advertise<geometry_msgs::WrenchStamped>
+    //                                 ("/sensor_hub/load", 0);
 
     sensor_hub_.openSensorHub(port_, baud_);
 }
@@ -24,12 +24,12 @@ SensorReadNode::~SensorReadNode()
 
 void SensorReadNode::readSensorData()
 {
-    sensor_hub_.readSensorHub();
-
-    load_msg_.header.stamp = ros::Time::now();
-    load_msg_.header.frame_id = "load_cell_frame";
-    load_msg_.wrench.force.z = sensor_hub_.getLoad();
-    load_pub_.publish(load_msg_);
+    // sensor_hub_.readSensorHub();
+    //
+    // load_msg_.header.stamp = ros::Time::now();
+    // load_msg_.header.frame_id = "load_cell_frame";
+    // load_msg_.wrench.force.z = sensor_hub_.getLoad();
+    // load_pub_.publish(load_msg_);
 }
 
 SensorWriteNode::SensorWriteNode(
@@ -52,7 +52,7 @@ SensorWriteNode::SensorWriteNode(
 
     sendCommand();
 
-    winch_speed_sub_ = nh_.subscribe<std_msgs::Int32>("winch_speed", 10, &SensorWriteNode::commandCB, this);
+    purge_unit_sub_ = nh_.subscribe<std_msgs::Bool>("unlock", 10, &SensorWriteNode::commandCB, this);
 
     initialized_ = true;
 }
@@ -62,28 +62,25 @@ SensorWriteNode::~SensorWriteNode()
     sensor_hub_.closeSensorHub();
 }
 
-void SensorWriteNode::commandCB(const std_msgs::Int32::ConstPtr& msg)
+void SensorWriteNode::commandCB(const std_msgs::Bool::ConstPtr& msg)
 {
     if(!initialized_)
         return;
 
-    winch_speed_ = msg->data;
+    unlock_ = msg->data;
     sendCommand();
 }
 
 void SensorWriteNode::SensorHubReconfigureCB(
                     sensor_hub::SensorHubConfig &config, uint32_t level)
 {
-    winch_speed_ = config.winch_speed;
-    load_cell_samples_ = config.load_cell_samples;
-
+    unlock_ = config.unlock;
     sendCommand();
 }
 
 void SensorWriteNode::sendCommand()
 {
-    sensor_hub_.setWS(winch_speed_);
-    sensor_hub_.setLS(load_cell_samples_);
+    sensor_hub_.setPU(unlock_);
     sensor_hub_.writeSensorHub();
 }
 

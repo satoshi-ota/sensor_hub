@@ -30,12 +30,8 @@ public:
     void readSensorHub();
     void writeSensorHub();
 
-    void inline setWS(int winch_speed)
-                     {winch_speed_ = winch_speed;};
-    void inline setLS(int load_cell_samples)
-                     {load_cell_samples_ = load_cell_samples;};
-
-    double inline getLoad(){return load_;};
+    void inline setPU(bool unlock)
+                     {unlock_ = unlock;};
 
     int kFileDiscriptor;
     int error;
@@ -43,16 +39,12 @@ public:
     char *p, *command, *contents, *checksum;
 
 private:
-    int winch_speed_, prev_winch_speed_;
-    int load_cell_samples_, prev_load_cell_samples_;
+    bool unlock_, prev_unlock_;
 
     Protocol protocol_;
 
-    double load_;
-
 private:
-    void sendWS();
-    void sendLS();
+    void sendPU();
 };
 
 } //namespace sensor_hub

@@ -6,7 +6,6 @@ namespace sensor_hub
 SensorHub::SensorHub()
 {
     error = 0;
-    load_ = 0.0;
 }
 
 SensorHub::~SensorHub()
@@ -97,63 +96,45 @@ bool SensorHub::validateCheckSum()
 
 void SensorHub::readSensorHub()
 {
-    int len = read(kFileDiscriptor, buff, sizeof(buff));
-
-    if(0 < len)
-    {
-        strncpy(temp, buff, strlen(buff));
-        temp[strlen(buff)] = '\0';
-
-        if((p = strstr(temp, "LD"))!=NULL)
-        {
-            command = strtok(p, protocol_.kContents.c_str());
-            contents = strtok(NULL, protocol_.kChecksum.c_str());
-            checksum = strtok(NULL, protocol_.kFooter.c_str());
-            if(validateCheckSum())
-            {
-                load_ = atof(contents);
-            }
-        }
-    }
+    // int len = read(kFileDiscriptor, buff, sizeof(buff));
+    //
+    // if(0 < len)
+    // {
+    //     strncpy(temp, buff, strlen(buff));
+    //     temp[strlen(buff)] = '\0';
+    //
+    //     if((p = strstr(temp, "LD"))!=NULL)
+    //     {
+    //         command = strtok(p, protocol_.kContents.c_str());
+    //         contents = strtok(NULL, protocol_.kChecksum.c_str());
+    //         checksum = strtok(NULL, protocol_.kFooter.c_str());
+    //         if(validateCheckSum())
+    //         {
+    //             load_ = atof(contents);
+    //         }
+    //     }
+    // }
 }
 
 void SensorHub::writeSensorHub()
 {
-    if(winch_speed_ != prev_winch_speed_)
+    if(unlock_ != prev_unlock_)
     {
-        sendWS();
-        prev_winch_speed_ = winch_speed_;
-    }
-
-    if(load_cell_samples_ != prev_load_cell_samples_)
-    {
-        sendLS();
-        prev_load_cell_samples_ = load_cell_samples_;
+        sendPU();
+        prev_unlock_ = unlock_;
     }
 };
 
-void SensorHub::sendWS()
+void SensorHub::sendPU()
 {
     protocol_.ClearPacket();
-    protocol_.AddCommand("WS");
-    protocol_.AddContents(std::to_string(winch_speed_));
+    protocol_.AddCommand("PU");
+    protocol_.AddContents(std::to_string(unlock_));
     protocol_.AddChecksum();
     protocol_.AddFooter();
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
-    ROS_DEBUG("%s\n", protocol_.getPacket().c_str());
-}
-
-void SensorHub::sendLS()
-{
-    protocol_.ClearPacket();
-    protocol_.AddCommand("LS");
-    protocol_.AddContents(std::to_string(load_cell_samples_));
-    protocol_.AddChecksum();
-    protocol_.AddFooter();
-    write(kFileDiscriptor, protocol_.getPacket().c_str(),
-          strlen(protocol_.getPacket().c_str()));
-    ROS_DEBUG("%s\n", protocol_.getPacket().c_str());
+    ROS_INFO("%s\n", protocol_.getPacket().c_str());
 }
 
 } //namespace sensor_hub
