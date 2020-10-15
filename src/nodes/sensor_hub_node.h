@@ -44,6 +44,8 @@ private:
     boost::condition_variable_any write_cond_;
     boost::thread* write_thread_;
 
+    boost::mutex r_w_mutex_;
+
     std::string port_;
     int baud_;
 

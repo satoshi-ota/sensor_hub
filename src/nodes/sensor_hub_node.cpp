@@ -99,6 +99,8 @@ void SensorHubNode::SensorHubReconfigureCB(
 
 void SensorHubNode::sendCommand()
 {
+    boost::mutex::scoped_lock lock(r_w_mutex_);
+
     sensor_hub_.setWS(winch_speed_);
     sensor_hub_.setLS(load_cell_samples_);
     sensor_hub_.writeSensorHub();
