@@ -73,7 +73,7 @@ void SensorHubNode::writeThread()
 {
     while(initialized_ && ros::ok())
     {
-        ros::spin();
+        ros::spinOnce();
     }
 
     ros::shutdown();
