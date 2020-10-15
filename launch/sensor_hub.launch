@@ -8,7 +8,7 @@
     <arg name="baud" default="57600"/>
     <arg name="reconfig" default="false"/>
 
-    <node name="sensor_hub_node" pkg="sensor_hub" type="sensor_hub_node" output="screen">
+    <node name="sensor_hub_node" pkg="sensor_hub" type="sensor_hub_node" ns="watt" output="screen">
         <param name="port" value="$(arg port)"/>
         <param name="baud" value="$(arg baud)"/>
     </node>
