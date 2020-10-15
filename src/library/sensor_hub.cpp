@@ -70,6 +70,8 @@ void SensorHub::closeSensorHub()
     {
         close(kFileDiscriptor);
         kFileDiscriptor = -1;
+
+        ROS_INFO("sensor_hub shutdown.");
     }
 }
 
