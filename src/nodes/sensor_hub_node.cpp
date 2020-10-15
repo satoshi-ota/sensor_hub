@@ -3,26 +3,52 @@
 namespace sensor_hub
 {
 
-SensorReadNode::SensorReadNode(
-    const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
-    :nh_(nh),
-     private_nh_(private_nh)
+SensorHubNode::SensorHubNode()
+    :initialized_(false)
 {
-    private_nh_.param<std::string>("port", port_, "ttyACM1");
-    private_nh_.param("baud", baud_, 57600);
+    ros::NodeHandle nh;
+    ros::NodeHandle private_nh("~");
 
-    load_pub_ = nh_.advertise<geometry_msgs::WrenchStamped>
-                                    ("/sensor_hub/load", 0);
+    private_nh.param<std::string>("port", port_, "ttyUSB0");
+    private_nh.param("baud", baud_, 57600);
 
-    sensor_hub_.openSensorHub(port_, baud_);
+    if(!sensor_hub_.openSensorHub(port_, baud_)){
+        ROS_INFO("Could not open serial port!");
+        sensor_hub_.closeSensorHub();
+    }
+
+    srv_ = boost::make_shared <dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>>(private_nh);
+    dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>::CallbackType cb
+        = boost::bind(&SensorHubNode::SensorHubReconfigureCB, this, _1, _2);
+    srv_->setCallback(cb);
+
+    sendCommand();
+
+    load_pub_ = nh.advertise<geometry_msgs::WrenchStamped>("load", 0);
+    winch_speed_sub_ = nh.subscribe<std_msgs::Int32>("winch_speed", 10, &SensorHubNode::commandCB, this);
+
+    write_thread_ = new boost::thread(boost::bind(&SensorHubNode::writeThread, this));
+    read_thread_ = new boost::thread(boost::bind(&SensorHubNode::readThread, this));
+
+    initialized_ = true;
 }
 
-SensorReadNode::~SensorReadNode()
+SensorHubNode::~SensorHubNode()
 {
+    write_thread_->interrupt();
+    write_thread_->join();
+
+    delete write_thread_;
+
+    read_thread_->interrupt();
+    read_thread_->join();
+
+    delete read_thread_;
+
     sensor_hub_.closeSensorHub();
 }
 
-void SensorReadNode::readSensorData()
+void SensorHubNode::readSensorData()
 {
     sensor_hub_.readSensorHub();
 
@@ -32,37 +58,28 @@ void SensorReadNode::readSensorData()
     load_pub_.publish(load_msg_);
 }
 
-SensorWriteNode::SensorWriteNode(
-    const ros::NodeHandle& nh, const ros::NodeHandle& private_nh)
-    :nh_(nh),
-     private_nh_(private_nh),
-     initialized_(false)
+void SensorHubNode::readThread()
 {
-    private_nh_.param<std::string>("port", port_, "ttyUSB0");
-    private_nh_.param("baud", baud_, 57600);
-
-    if(!sensor_hub_.openSensorHub(port_, baud_)){
-        ROS_INFO("Could not open serial port!");
+    while(initialized_ && ros::ok())
+    {
+        readSensorData();
+        ros::spinOnce();
     }
 
-    srv_ = boost::make_shared <dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>>(private_nh);
-    dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>::CallbackType cb
-        = boost::bind(&SensorWriteNode::SensorHubReconfigureCB, this, _1, _2);
-    srv_->setCallback(cb);
-
-    sendCommand();
-
-    winch_speed_sub_ = nh_.subscribe<std_msgs::Int32>("winch_speed", 10, &SensorWriteNode::commandCB, this);
-
-    initialized_ = true;
+    ros::shutdown();
 }
 
-SensorWriteNode::~SensorWriteNode()
+void SensorHubNode::writeThread()
 {
-    sensor_hub_.closeSensorHub();
+    while(initialized_ && ros::ok())
+    {
+        ros::spin();
+    }
+
+    ros::shutdown();
 }
 
-void SensorWriteNode::commandCB(const std_msgs::Int32::ConstPtr& msg)
+void SensorHubNode::commandCB(const std_msgs::Int32::ConstPtr& msg)
 {
     if(!initialized_)
         return;
@@ -71,7 +88,7 @@ void SensorWriteNode::commandCB(const std_msgs::Int32::ConstPtr& msg)
     sendCommand();
 }
 
-void SensorWriteNode::SensorHubReconfigureCB(
+void SensorHubNode::SensorHubReconfigureCB(
                     sensor_hub::SensorHubConfig &config, uint32_t level)
 {
     winch_speed_ = config.winch_speed;
@@ -80,7 +97,7 @@ void SensorWriteNode::SensorHubReconfigureCB(
     sendCommand();
 }
 
-void SensorWriteNode::sendCommand()
+void SensorHubNode::sendCommand()
 {
     sensor_hub_.setWS(winch_speed_);
     sensor_hub_.setLS(load_cell_samples_);
@@ -89,44 +106,10 @@ void SensorWriteNode::sendCommand()
 
 } //namespace sensor_hub
 
-void readThread()
-{
-    ros::NodeHandle nh;
-    ros::NodeHandle private_nh("~");
-    sensor_hub::SensorReadNode sensor_read_node(nh, private_nh);
-
-    while(ros::ok())
-    {
-        sensor_read_node.readSensorData();
-        ros::spinOnce();
-    }
-
-    ros::shutdown();
-}
-
-void writeThread()
-{
-    ros::NodeHandle nh;
-    ros::NodeHandle private_nh("~");
-    sensor_hub::SensorWriteNode sensor_write_node(nh, private_nh);
-
-    while(ros::ok())
-    {
-        ros::spin();
-    }
-
-    ros::shutdown();
-}
-
 int main(int argc, char** argv)
 {
     ros::init(argc, argv, "sensor_hub_node");
-
-    std::thread th_read(readThread);
-    std::thread th_write(writeThread);
-
-    th_read.join();
-    th_write.join();
+    sensor_hub::SensorHubNode sensor_hub_node;
 
     return 0;
 }
