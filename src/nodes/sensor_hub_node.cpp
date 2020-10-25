@@ -65,9 +65,11 @@ void SensorHubNode::sendCommand()
 
 void SensorHubNode::writeThread()
 {
+    ros::Rate rate(50);
     while(initialized_ && ros::ok())
     {
         ros::spinOnce();
+        rate.sleep();
     }
 
     ros::shutdown();
