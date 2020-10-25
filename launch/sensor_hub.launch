@@ -4,7 +4,7 @@
     <arg name="debug" default="false"/>
     <arg name="prefix" value="" unless="$(arg debug)"/>
     <arg name="prefix" value="gdb -ex run --args" if="$(arg debug)"/>
-    <arg name="port" default="ttyUSB0"/>
+    <arg name="port" default="ttyARD"/>
     <arg name="baud" default="57600"/>
     <arg name="reconfig" default="false"/>
 
