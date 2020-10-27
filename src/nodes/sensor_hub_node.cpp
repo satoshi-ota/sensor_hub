@@ -27,7 +27,6 @@ SensorHubNode::SensorHubNode()
     load_pub_ = nh.advertise<geometry_msgs::WrenchStamped>("load", 0);
     winch_speed_sub_ = nh.subscribe<std_msgs::Int32>("winch_speed", 10, &SensorHubNode::commandCB, this);
 
-    write_thread_ = new boost::thread(boost::bind(&SensorHubNode::writeThread, this));
     read_thread_ = new boost::thread(boost::bind(&SensorHubNode::readThread, this));
 
     initialized_ = true;
@@ -35,11 +34,6 @@ SensorHubNode::SensorHubNode()
 
 SensorHubNode::~SensorHubNode()
 {
-    write_thread_->interrupt();
-    write_thread_->join();
-
-    delete write_thread_;
-
     read_thread_->interrupt();
     read_thread_->join();
 
@@ -50,6 +44,8 @@ SensorHubNode::~SensorHubNode()
 
 void SensorHubNode::readSensorData()
 {
+    boost::mutex::scoped_lock lock(r_w_mutex_);
+
     sensor_hub_.readSensorHub();
 
     load_msg_.header.stamp = ros::Time::now();
@@ -64,18 +60,6 @@ void SensorHubNode::readThread()
     while(initialized_ && ros::ok())
     {
         readSensorData();
-        ros::spinOnce();
-        rate.sleep();
-    }
-
-    ros::shutdown();
-}
-
-void SensorHubNode::writeThread()
-{
-    ros::Rate rate(50);
-    while(initialized_ && ros::ok())
-    {
         ros::spinOnce();
         rate.sleep();
     }

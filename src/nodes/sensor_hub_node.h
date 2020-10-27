@@ -24,7 +24,6 @@ public:
     void readSensorData();
     void sendCommand();
 
-    void writeThread();
     void readThread();
 
     void commandCB(const std_msgs::Int32::ConstPtr& msg);
@@ -39,10 +38,6 @@ private:
     bool runReadTh_;
     boost::condition_variable_any read_cond_;
     boost::thread* read_thread_;
-
-    bool runWriteTh_;
-    boost::condition_variable_any write_cond_;
-    boost::thread* write_thread_;
 
     boost::mutex r_w_mutex_;
 

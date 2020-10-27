@@ -143,7 +143,7 @@ void SensorHub::sendWS()
     protocol_.AddFooter();
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
-    ROS_DEBUG("%s\n", protocol_.getPacket().c_str());
+    ROS_INFO("%s\n", protocol_.getPacket().c_str());
 }
 
 void SensorHub::sendLS()
@@ -155,7 +155,7 @@ void SensorHub::sendLS()
     protocol_.AddFooter();
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
           strlen(protocol_.getPacket().c_str()));
-    ROS_DEBUG("%s\n", protocol_.getPacket().c_str());
+    ROS_INFO("%s\n", protocol_.getPacket().c_str());
 }
 
 } //namespace sensor_hub
