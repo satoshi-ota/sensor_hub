@@ -32,6 +32,8 @@ public:
 
     void inline setPU(bool unlock)
                      {unlock_ = unlock;};
+    void inline setMS(std::vector<int> motor_speed)
+                     {motor_speed_ = motor_speed;};
 
     int kFileDiscriptor;
     int error;
@@ -40,11 +42,13 @@ public:
 
 private:
     bool unlock_, prev_unlock_;
+    std::vector<int> motor_speed_, prev_motor_speed_;
 
     Protocol protocol_;
 
 private:
     void sendPU();
+    void sendMS();
 };
 
 } //namespace sensor_hub

@@ -6,6 +6,7 @@
 
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <geometry_msgs/Twist.h>
 #include <dynamic_reconfigure/server.h>
 #include <sensor_hub/SensorHubConfig.h>
 
@@ -23,10 +24,12 @@ public:
     void sendCommand();
     void writeThread();
 
-    void commandCB(const std_msgs::Bool::ConstPtr& msg);
+    void unlockCommandCB(const std_msgs::Bool::ConstPtr& msg);
+    void velCommandCB(const geometry_msgs::Twist::ConstPtr& msg);
     void SensorHubReconfigureCB(sensor_hub::SensorHubConfig &config, uint32_t level);
 private:
     ros::Subscriber purge_unit_sub_;
+    ros::Subscriber cmd_vel_sub_;
 
     SensorHub sensor_hub_;
 
@@ -36,6 +39,7 @@ private:
 
     std::string port_;
     int baud_;
+    std::vector<int> motor_speed_;
     bool unlock_;
     bool initialized_;
     boost::shared_ptr<dynamic_reconfigure::Server<sensor_hub::SensorHubConfig>> srv_;

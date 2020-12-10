@@ -4,12 +4,22 @@
 Servo myservo;
 sensor_hub::Protocol protocol_;
 
+const double deadband_minus = -30;
+const double deadband_plus = 30;
+
 char buff[255], temp[255];
 char *p, *command, *contents, *checksum;
 const String kContents = ":";
 const String kChecksum = "~";
 const String kFooter = "\n";
 int servo_sig = 2;
+
+int inA1 = 7;
+int inA2 = 8;
+int enA = 9;
+int inB1 = 11;
+int inB2 = 12;
+int enB = 10;
 
 void com_init()
 {
@@ -54,6 +64,12 @@ bool validateCheckSum()
 void setup(){
   myservo.attach(2);
   myservo.write(37);
+  pinMode(inA1, OUTPUT);
+  pinMode(inA2, OUTPUT);
+  pinMode(enA, OUTPUT);
+  pinMode(inB1, OUTPUT);
+  pinMode(inB2, OUTPUT);
+  pinMode(enB, OUTPUT);
   delay(100);
   com_init();
 }
@@ -88,6 +104,68 @@ void serial_read()
 
         } else {
           myservo.write(60);
+
+        }
+      }
+    }
+
+    strncpy(temp, buff, strlen(buff));
+    temp[strlen(buff)] = '\0';
+
+    if((p = strstr(temp, "MS"))!=NULL)
+    {
+      Serial.println(temp);
+      command = strtok(p, kContents.c_str());
+      contents = strtok(NULL, kChecksum.c_str());
+      checksum = strtok(NULL, kFooter.c_str());
+      Serial.println(command);
+      Serial.println(contents);
+      Serial.println(checksum);
+      if(validateCheckSum())
+      {
+        char* r_ms = strtok(contents, ",");
+        char* l_ms = strtok(NULL, ",");
+
+        int r_pwm = atoi(r_ms);
+//        digitalWrite(inA1, HIGH);
+//        digitalWrite(inA2, LOW);
+//        analogWrite(enA, r_pwm);
+        
+        
+        int l_pwm = atoi(l_ms);
+//        digitalWrite(inB1, HIGH);
+//        digitalWrite(inB2, LOW);
+//        analogWrite(enB, l_pwm);
+
+        if(r_pwm < deadband_minus){
+          digitalWrite(inA1, HIGH);
+          digitalWrite(inA2, LOW);
+          analogWrite(enA, abs(r_pwm));
+
+        } else if(deadband_plus < r_pwm){
+          digitalWrite(inA1, LOW);
+          digitalWrite(inA2, HIGH);
+          analogWrite(enA, abs(r_pwm));
+           
+        } else {
+          digitalWrite(inA1, LOW);
+          digitalWrite(inA2, LOW);
+
+        }
+
+        if(l_pwm < deadband_minus){
+          digitalWrite(inB1, HIGH);
+          digitalWrite(inB2, LOW);
+          analogWrite(enB, abs(l_pwm));
+
+        } else if(deadband_plus < l_pwm){
+          digitalWrite(inB1, LOW);
+          digitalWrite(inB2, HIGH);
+          analogWrite(enB, abs(l_pwm));
+           
+        } else {
+          digitalWrite(inB1, LOW);
+          digitalWrite(inB2, LOW);
 
         }
       }

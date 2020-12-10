@@ -24,7 +24,8 @@ SensorHubNode::SensorHubNode()
 
     sendCommand();
 
-    purge_unit_sub_ = nh.subscribe<std_msgs::Bool>("unlock", 10, &SensorHubNode::commandCB, this);
+    purge_unit_sub_ = nh.subscribe<std_msgs::Bool>("unlock", 10, &SensorHubNode::unlockCommandCB, this);
+    cmd_vel_sub_ = nh.subscribe<geometry_msgs::Twist>("cmd_vel", 10, &SensorHubNode::velCommandCB, this);
 
     write_thread_ = new boost::thread(boost::bind(&SensorHubNode::writeThread, this));
 
@@ -41,12 +42,25 @@ SensorHubNode::~SensorHubNode()
     sensor_hub_.closeSensorHub();
 }
 
-void SensorHubNode::commandCB(const std_msgs::Bool::ConstPtr& msg)
+void SensorHubNode::unlockCommandCB(const std_msgs::Bool::ConstPtr& msg)
 {
     if(!initialized_)
         return;
 
     unlock_ = msg->data;
+    sendCommand();
+}
+
+void SensorHubNode::velCommandCB(const geometry_msgs::Twist::ConstPtr& msg)
+{
+    if(!initialized_)
+        return;
+
+    int right_motor = 255 * (msg->linear.x + msg->angular.z);
+    int left_motor = 255 * msg->linear.x + msg->angular.z;
+    motor_speed_.clear();
+    motor_speed_.push_back(right_motor);
+    motor_speed_.push_back(left_motor);
     sendCommand();
 }
 
@@ -60,6 +74,7 @@ void SensorHubNode::SensorHubReconfigureCB(
 void SensorHubNode::sendCommand()
 {
     sensor_hub_.setPU(unlock_);
+    sensor_hub_.setMS(motor_speed_);
     sensor_hub_.writeSensorHub();
 }
 

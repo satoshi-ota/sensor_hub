@@ -125,13 +125,36 @@ void SensorHub::writeSensorHub()
         sendPU();
         prev_unlock_ = unlock_;
     }
-};
+
+    if(motor_speed_ != prev_motor_speed_)
+    {
+        sendMS();
+        prev_motor_speed_ = motor_speed_;
+    }
+}
 
 void SensorHub::sendPU()
 {
     protocol_.ClearPacket();
     protocol_.AddCommand("PU");
     protocol_.AddContents(std::to_string(unlock_));
+    protocol_.AddChecksum();
+    protocol_.AddFooter();
+    write(kFileDiscriptor, protocol_.getPacket().c_str(),
+          strlen(protocol_.getPacket().c_str()));
+    ROS_INFO("%s\n", protocol_.getPacket().c_str());
+}
+
+void SensorHub::sendMS()
+{
+    std::string contents = "";
+    contents.append(std::to_string(motor_speed_[0]));
+    contents.append(",");
+    contents.append(std::to_string(motor_speed_[1]));
+
+    protocol_.ClearPacket();
+    protocol_.AddCommand("MS");
+    protocol_.AddContents(contents);
     protocol_.AddChecksum();
     protocol_.AddFooter();
     write(kFileDiscriptor, protocol_.getPacket().c_str(),
