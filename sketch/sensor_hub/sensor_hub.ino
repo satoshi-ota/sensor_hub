@@ -154,13 +154,13 @@ void serial_read()
         }
 
         if(l_pwm < deadband_minus){
-          digitalWrite(inB1, HIGH);
-          digitalWrite(inB2, LOW);
+          digitalWrite(inB1, LOW);
+          digitalWrite(inB2, HIGH);
           analogWrite(enB, abs(l_pwm));
 
         } else if(deadband_plus < l_pwm){
-          digitalWrite(inB1, LOW);
-          digitalWrite(inB2, HIGH);
+          digitalWrite(inB1, HIGH);
+          digitalWrite(inB2, LOW);
           analogWrite(enB, abs(l_pwm));
            
         } else {
