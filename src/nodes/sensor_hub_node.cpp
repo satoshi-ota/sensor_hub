@@ -56,8 +56,14 @@ void SensorHubNode::velCommandCB(const geometry_msgs::Twist::ConstPtr& msg)
     if(!initialized_)
         return;
 
-    int right_motor = 255 * (msg->linear.x + msg->angular.z);
-    int left_motor = 255 * msg->linear.x + msg->angular.z;
+    int right_motor = 255 * msg->linear.x;
+    int left_motor = 255 * msg->linear.x;
+
+    if(0.0 < fabs(msg->angular.z)){
+        right_motor = 255 * msg->angular.z;
+        left_motor = -255 * msg->angular.z;
+    }
+    
     motor_speed_.clear();
     motor_speed_.push_back(right_motor);
     motor_speed_.push_back(left_motor);
